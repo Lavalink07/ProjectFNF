@@ -162,6 +162,7 @@ class PlayState extends MusicBeatState
 
 	public var gfSpeed:Int = 1;
 	public var health:Float = 1;
+	public var healthDrained:Float = 1;
 	public var combo:Int = 0;
 
 	private var healthBarBG:AttachedSprite;
@@ -4436,6 +4437,10 @@ class PlayState extends MusicBeatState
 		StrumPlayAnim(true, Std.int(Math.abs(note.noteData)) % 4, time);
 		note.hitByOpponent = true;
 
+		var damage:Float = ClientPrefs.damageFromOpponentNotes * 0.02;
+		var toRemove:Float = Math.min(damage, ClientPrefs.opponentNotesCanKill && healthDrained + damage < 1.8 ? 0.2 : Math.max(0.001, health) - 0.001);
+		health -= toRemove;
+		healthDrained += toRemove;
 		callOnLuas('opponentNoteHit', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
 
 		if (!note.isSustainNote)
@@ -4491,6 +4496,7 @@ class PlayState extends MusicBeatState
 				popUpScore(note);
 			}
 			health += note.hitHealth * healthGain;
+			healthDrained -= note.hitHealth * healthGain;
 
 			if(!note.noAnimation) {
 				var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];

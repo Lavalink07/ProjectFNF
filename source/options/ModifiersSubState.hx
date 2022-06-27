@@ -15,6 +15,26 @@ class ModifiersSubState extends BaseOptionsMenu
 		//	false); // Default value
 		//addOption(option);
 
+		var option:Option = new Option('Damage from Opponent Notes', // Name
+			'How much health will the opponent reduce by hitting a note', // Description
+			'damageFromOpponentNotes', // Save data variable name
+			'float', // Variable type
+			0); // Default value
+		option.displayFormat = "%v%";
+		option.scrollSpeed = 3.3;
+		option.minValue = 0.0;
+		option.maxValue = 10.0;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+		addOption(option);
+
+		var option:Option = new Option('Opponent Notes Can Kill', // Name
+			'If checked, damage from opponent notes can be lethal.', // Description
+			'opponentNotesCanKill', // Save data variable name
+			'bool', // Variable type
+			false); // Default value
+		addOption(option);
+
 		super();
 	}
 }
