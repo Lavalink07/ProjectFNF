@@ -63,6 +63,7 @@ class ClientPrefs {
 	// ProjectFNF
 	public static var damageFromOpponentNotes:Float = 0;
 	public static var opponentNotesCanKill:Bool = false;
+	public static var stunsBlockInputs:Float = 0;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -135,6 +136,7 @@ class ClientPrefs {
 
 		FlxG.save.data.damageFromOpponentNotes = damageFromOpponentNotes;
 		FlxG.save.data.opponentNotesCanKill = opponentNotesCanKill;
+		FlxG.save.data.stunsBlockInputs = stunsBlockInputs;
 	
 		FlxG.save.flush();
 
@@ -257,6 +259,9 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.opponentNotesCanKill != null) {
 			opponentNotesCanKill = FlxG.save.data.opponentNotesCanKill;
+		}
+		if(FlxG.save.data.stunsBlockInputs != null) {
+			stunsBlockInputs = FlxG.save.data.stunsBlockInputs;
 		}
 		
 		// flixel automatically saves your volume!

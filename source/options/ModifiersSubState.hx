@@ -35,6 +35,19 @@ class ModifiersSubState extends BaseOptionsMenu
 			false); // Default value
 		addOption(option);
 
+		var option:Option = new Option('Stuns Block Inputs', // Name
+			'For how long are inputs blocked after a miss', // Description
+			'stunsBlockInputs', // Save data variable name
+			'float', // Variable type
+			0); // Default value
+		option.displayFormat = "%v seconds";
+		option.scrollSpeed = 1.7;
+		option.minValue = 0.0;
+		option.maxValue = 5.0;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+		addOption(option);
+
 		super();
 	}
 }

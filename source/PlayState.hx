@@ -4335,6 +4335,20 @@ class PlayState extends MusicBeatState
 		totalPlayed++;
 		RecalculateRating(true);
 
+		if (!boyfriend.stunned && ClientPrefs.stunsBlockInputs > 0) {
+			boyfriend.stunned = true;
+			for (note in notes)
+				if (Conductor.songPosition + ClientPrefs.stunsBlockInputs * 1000 > note.strumTime + noteKillOffset)
+					{ note.copyAlpha = false; note.alpha = 0.3; }
+			for (note in unspawnNotes)
+				if (Conductor.songPosition + ClientPrefs.stunsBlockInputs * 1000 > note.strumTime + noteKillOffset)
+					{ note.copyAlpha = false; note.alpha = 0.3; }
+
+			new FlxTimer().start(ClientPrefs.stunsBlockInputs, function(tmr:FlxTimer) {
+				boyfriend.stunned = false;
+			});
+		}
+
 		var char:Character = boyfriend;
 		if(daNote.gfNote) {
 			char = gf;
@@ -4379,13 +4393,20 @@ class PlayState extends MusicBeatState
 			// FlxG.sound.play(Paths.sound('missnote1'), 1, false);
 			// FlxG.log.add('played imss note');
 
-			/*boyfriend.stunned = true;
+			if (!boyfriend.stunned && ClientPrefs.stunsBlockInputs > 0) {
+			boyfriend.stunned = true;
+			for (note in notes)
+				if (Conductor.songPosition + ClientPrefs.stunsBlockInputs * 1000 > note.strumTime + noteKillOffset)
+					{ note.copyAlpha = false; note.alpha = 0.3; }
+			for (note in unspawnNotes)
+				if (Conductor.songPosition + ClientPrefs.stunsBlockInputs * 1000 > note.strumTime + noteKillOffset)
+					{ note.copyAlpha = false; note.alpha = 0.3; }
 
-			// get stunned for 1/60 of a second, makes you able to
-			new FlxTimer().start(1 / 60, function(tmr:FlxTimer)
+			new FlxTimer().start(ClientPrefs.stunsBlockInputs, function(tmr:FlxTimer)
 			{
 				boyfriend.stunned = false;
-			});*/
+			});
+			}
 
 			if(boyfriend.hasMissAnimations) {
 				boyfriend.playAnim(singAnimations[Std.int(Math.abs(direction))] + 'miss', true);
