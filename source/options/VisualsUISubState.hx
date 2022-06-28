@@ -101,6 +101,18 @@ class VisualsUISubState extends BaseOptionsMenu
 		option.changeValue = 10;
 		addOption(option);
 
+		var option:Option = new Option('Miss Shake Intensity',
+			'How much does the screen shake when missing a note',
+			'missShakeIntensity',
+			'float',
+			0.3);
+		option.scrollSpeed = 0.5;
+		option.minValue = 0.0;
+		option.maxValue = 2;
+		option.changeValue = 0.1;
+		option.onChange = onChangeMissShakeIntensity;
+		addOption(option);
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',
@@ -141,6 +153,10 @@ class VisualsUISubState extends BaseOptionsMenu
 			FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(ClientPrefs.pauseMusic)));
 
 		changedMusic = true;
+	}
+	function onChangeMissShakeIntensity()
+	{
+		FlxG.camera.shake(ClientPrefs.missShakeIntensity * 0.01);
 	}
 
 	override function destroy()

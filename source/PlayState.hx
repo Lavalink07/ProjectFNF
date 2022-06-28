@@ -4373,6 +4373,7 @@ class PlayState extends MusicBeatState
 			char = gf;
 		}
 
+		FlxG.camera.shake(ClientPrefs.missShakeIntensity * 0.01, 0.5, null, true, singAnimations[Std.int(Math.abs(daNote.noteData))].endsWith('UP') || singAnimations[Std.int(Math.abs(daNote.noteData))].endsWith('DOWN') ? flixel.util.FlxAxes.Y : flixel.util.FlxAxes.X);
 		if(char != null && !daNote.noMissAnimation && char.hasMissAnimations)
 		{
 			var animToPlay:String = singAnimations[Std.int(Math.abs(daNote.noteData))] + 'miss' + daNote.animSuffix;
@@ -4428,6 +4429,7 @@ class PlayState extends MusicBeatState
 			});
 			}
 
+			FlxG.camera.shake(ClientPrefs.missShakeIntensity * 0.01, 0.5, null, true, singAnimations[Std.int(Math.abs(direction))].endsWith('UP') || singAnimations[Std.int(Math.abs(direction))].endsWith('DOWN') ? flixel.util.FlxAxes.Y : flixel.util.FlxAxes.X);
 			if(char.hasMissAnimations) {
 				char.playAnim(singAnimations[Std.int(Math.abs(direction))] + 'miss', true);
 			}

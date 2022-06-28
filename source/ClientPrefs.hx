@@ -65,6 +65,7 @@ class ClientPrefs {
 	public static var opponentNotesCanKill:Bool = false;
 	public static var stunsBlockInputs:Float = 0;
 	public static var cameraMoveIntensity:Float = 0;
+	public static var missShakeIntensity:Float = 0;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -139,6 +140,7 @@ class ClientPrefs {
 		FlxG.save.data.opponentNotesCanKill = opponentNotesCanKill;
 		FlxG.save.data.stunsBlockInputs = stunsBlockInputs;
 		FlxG.save.data.cameraMoveIntensity = cameraMoveIntensity;
+		FlxG.save.data.missShakeIntensity = missShakeIntensity;
 	
 		FlxG.save.flush();
 
@@ -267,6 +269,9 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.cameraMoveIntensity != null) {
 			cameraMoveIntensity = FlxG.save.data.cameraMoveIntensity;
+		}
+		if(FlxG.save.data.missShakeIntensity != null) {
+			missShakeIntensity = FlxG.save.data.missShakeIntensity;
 		}
 		
 		// flixel automatically saves your volume!
