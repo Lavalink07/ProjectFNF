@@ -3667,10 +3667,10 @@ class PlayState extends MusicBeatState
 
 		if (gf != null && SONG.notes[curSection].gfSection)
 		{
-			camFollow.set(gf.getMidpoint().x, gf.getMidpoint().y);
+			/*camFollow.set(gf.getMidpoint().x, gf.getMidpoint().y);
 			camFollow.x += gf.cameraPosition[0] + girlfriendCameraOffset[0];
 			camFollow.y += gf.cameraPosition[1] + girlfriendCameraOffset[1];
-			tweenCamIn();
+			tweenCamIn();*/ moveCamera(false);
 			callOnLuas('onMoveCamera', ['gf']);
 			return;
 		}
@@ -3688,20 +3688,32 @@ class PlayState extends MusicBeatState
 	}
 
 	var cameraTwn:FlxTween;
-	public function moveCamera(isDad:Bool)
+	public function moveCamera(isDad:Bool, ?direction:String = "")
 	{
+		var addX:Float = 0;
+		var addY:Float = 0;
+		if (direction.endsWith("UP")) addY -= ClientPrefs.cameraMoveIntensity;
+		if (direction.endsWith("DOWN")) addY += ClientPrefs.cameraMoveIntensity;
+		if (direction.endsWith("LEFT")) addX -= ClientPrefs.cameraMoveIntensity;
+		if (direction.endsWith("RIGHT")) addX += ClientPrefs.cameraMoveIntensity;
+		if (SONG.notes[curSection].gfSection) {
+			camFollow.set(gf.getMidpoint().x, gf.getMidpoint().y);
+			camFollow.x += gf.cameraPosition[0] + girlfriendCameraOffset[0] + addX;
+			camFollow.y += gf.cameraPosition[1] + girlfriendCameraOffset[1] + addY;
+			tweenCamIn();
+		} else
 		if(isDad)
 		{
 			camFollow.set(dad.getMidpoint().x + 150, dad.getMidpoint().y - 100);
-			camFollow.x += dad.cameraPosition[0] + opponentCameraOffset[0];
-			camFollow.y += dad.cameraPosition[1] + opponentCameraOffset[1];
+			camFollow.x += dad.cameraPosition[0] + opponentCameraOffset[0] + addX;
+			camFollow.y += dad.cameraPosition[1] + opponentCameraOffset[1] + addY;
 			tweenCamIn();
 		}
 		else
 		{
 			camFollow.set(boyfriend.getMidpoint().x - 100, boyfriend.getMidpoint().y - 100);
-			camFollow.x -= boyfriend.cameraPosition[0] - boyfriendCameraOffset[0];
-			camFollow.y += boyfriend.cameraPosition[1] + boyfriendCameraOffset[1];
+			camFollow.x -= boyfriend.cameraPosition[0] - boyfriendCameraOffset[0] - addX;
+			camFollow.y += boyfriend.cameraPosition[1] + boyfriendCameraOffset[1] + addY;
 
 			if (Paths.formatToSongPath(SONG.song) == 'tutorial' && cameraTwn == null && FlxG.camera.zoom != 1)
 			{
@@ -4432,6 +4444,9 @@ class PlayState extends MusicBeatState
 		var char:Character = opponentPlay ? boyfriend : dad;
 		if (note.gfNote && gf != null) char = gf;
 		var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];
+		if (char != gf) {
+			if (!SONG.notes[curSection].mustHitSection == !opponentPlay) moveCamera(!opponentPlay, animToPlay);
+		} else if (SONG.notes[curSection].gfSection) moveCamera(!opponentPlay, animToPlay);
 		if(note.noteType == 'Hey!' && char.animOffsets.exists('hey')) {
 			char.playAnim('hey', true);
 			char.specialAnim = true;
@@ -4532,9 +4547,12 @@ class PlayState extends MusicBeatState
 			health += note.hitHealth * healthGain;
 			healthDrained -= note.hitHealth * healthGain;
 
-			if(!note.noAnimation) {
-				var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];
+			var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];
 
+			if (char != gf) {
+				if (SONG.notes[curSection].mustHitSection == !opponentPlay) moveCamera(opponentPlay, animToPlay);
+			} else if (!SONG.notes[curSection].gfSection) moveCamera(!opponentPlay, animToPlay);
+			if(!note.noAnimation) {
 				/*if(note.gfNote)
 				{
 					if(gf != null)

@@ -89,6 +89,18 @@ class VisualsUISubState extends BaseOptionsMenu
 		option.decimals = 1;
 		addOption(option);
 		
+		var option:Option = new Option('Camera Move Intensity',
+			'How far should the camera move when a note gets hit.',
+			'cameraMoveIntensity',
+			'int',
+			70);
+		option.displayFormat = "%v pixels";
+		option.scrollSpeed = 0;
+		option.minValue = 0;
+		option.maxValue = 200;
+		option.changeValue = 10;
+		addOption(option);
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',
