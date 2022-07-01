@@ -113,6 +113,25 @@ class VisualsUISubState extends BaseOptionsMenu
 		option.onChange = onChangeMissShakeIntensity;
 		addOption(option);
 
+		var option:Option = new Option('Advanced Score Text', //Name
+			'If checked, there will be additional information displayed in score text.', //Description
+			'advancedScoreTxt', //Save data variable name
+			'bool', //Variable type
+			true); //Default value
+		addOption(option);
+
+		var option:Option = new Option('Score Text Underlay Opacity',
+			'How opaque should be an underlay for score text.',
+			'scoreTxtUnderlayOpacity',
+			'percent',
+			0.3);
+		addOption(option);
+		option.scrollSpeed = 1.6;
+		option.minValue = 0.0;
+		option.maxValue = 1;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',

@@ -70,6 +70,8 @@ class ClientPrefs {
 	public static var scoreSystem:String = 'Vanilla';
 	public static var accuracySystem:String = 'Psych';
 	public static var missAnimsSounds:Bool = true;
+	public static var advancedScoreTxt:Bool = true;
+	public static var scoreTxtUnderlayOpacity:Float = 0.3;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -149,6 +151,8 @@ class ClientPrefs {
 		FlxG.save.data.scoreSystem = scoreSystem;
 		FlxG.save.data.accuracySystem = accuracySystem;
 		FlxG.save.data.missAnimsSounds = missAnimsSounds;
+		FlxG.save.data.advancedScoreTxt = advancedScoreTxt;
+		FlxG.save.data.scoreTxtUnderlayOpacity = scoreTxtUnderlayOpacity;
 	
 		FlxG.save.flush();
 
@@ -292,6 +296,12 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.missAnimsSounds != null) {
 			missAnimsSounds = FlxG.save.data.missAnimsSounds;
+		}
+		if(FlxG.save.data.advancedScoreTxt != null) {
+			advancedScoreTxt = FlxG.save.data.advancedScoreTxt;
+		}
+		if(FlxG.save.data.scoreTxtUnderlayOpacity != null) {
+			scoreTxtUnderlayOpacity = FlxG.save.data.scoreTxtUnderlayOpacity;
 		}
 		
 		// flixel automatically saves your volume!
