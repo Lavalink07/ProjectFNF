@@ -69,6 +69,7 @@ class ClientPrefs {
 	public static var missShakeIntensity:Float = 0;
 	public static var scoreSystem:String = 'Vanilla';
 	public static var accuracySystem:String = 'Psych';
+	public static var missAnimsSounds:Bool = true;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -147,6 +148,7 @@ class ClientPrefs {
 		FlxG.save.data.missShakeIntensity = missShakeIntensity;
 		FlxG.save.data.scoreSystem = scoreSystem;
 		FlxG.save.data.accuracySystem = accuracySystem;
+		FlxG.save.data.missAnimsSounds = missAnimsSounds;
 	
 		FlxG.save.flush();
 
@@ -287,6 +289,9 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.accuracySystem != null) {
 			accuracySystem = FlxG.save.data.accuracySystem;
+		}
+		if(FlxG.save.data.missAnimsSounds != null) {
+			missAnimsSounds = FlxG.save.data.missAnimsSounds;
 		}
 		
 		// flixel automatically saves your volume!

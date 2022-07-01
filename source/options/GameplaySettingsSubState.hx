@@ -106,6 +106,13 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			['osu!mania (ScoreV2)', 'osu!mania (ScoreV1)', 'Psych']);
 		addOption(option);
 
+		var option:Option = new Option('Play Miss Anims and Sounds', //Name
+			"If unchecked, you will not see miss animations and won't\nhear miss sounds.", //Description
+			'missAnimsSounds', //Save data variable name
+			'bool', //Variable type
+			true); //Default value
+		addOption(option);
+
 		var option:Option = new Option('Rating Offset',
 			'Changes how late/early you have to hit for a "Sick!"\nHigher values mean you have to hit later.',
 			'ratingOffset',

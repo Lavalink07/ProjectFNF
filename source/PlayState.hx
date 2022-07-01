@@ -4226,9 +4226,9 @@ class PlayState extends MusicBeatState
 				}
 				else{
 					callOnLuas('onGhostTap', [key]);
-					if (canMiss) {
+					//if (canMiss) {
 						noteMissPress(key);
-					}
+					//}
 				}
 
 				// I dunno what you need this for but here you go
@@ -4374,6 +4374,7 @@ class PlayState extends MusicBeatState
 				note.destroy();
 			}
 		});
+		var prevCombo:Int = combo;
 		combo = 0;
 		health -= daNote.missHealth * healthLoss;
 		
@@ -4413,10 +4414,13 @@ class PlayState extends MusicBeatState
 		}
 
 		FlxG.camera.shake(ClientPrefs.missShakeIntensity * 0.01, 0.5, null, true, singAnimations[Std.int(Math.abs(daNote.noteData))].endsWith('UP') || singAnimations[Std.int(Math.abs(daNote.noteData))].endsWith('DOWN') ? flixel.util.FlxAxes.Y : flixel.util.FlxAxes.X);
+		if (ClientPrefs.missAnimsSounds) {
 		if(char != null && !daNote.noMissAnimation && char.hasMissAnimations)
 		{
 			var animToPlay:String = singAnimations[Std.int(Math.abs(daNote.noteData))] + 'miss' + daNote.animSuffix;
 			char.playAnim(animToPlay, true);
+		}
+		if (prevCombo >= 10 || totalPlayed == 1) FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
 		}
 
 		callOnLuas('noteMiss', [notes.members.indexOf(daNote), daNote.noteData, daNote.noteType, daNote.isSustainNote]);
@@ -4424,11 +4428,21 @@ class PlayState extends MusicBeatState
 
 	function noteMissPress(direction:Int = 1):Void //You pressed a key when there was no notes to press for this key
 	{
-		if(ClientPrefs.ghostTapping) return; //fuck it
+		//if(ClientPrefs.ghostTapping) return; //fuck it
 
 		if (!boyfriend.stunned)
 		{
 			var char:Character = opponentPlay ? dad : boyfriend;
+			if (ClientPrefs.missAnimsSounds) {
+				if (char.hasMissAnimations) char.playAnim(singAnimations[Std.int(Math.abs(direction))] + 'miss', true);
+				if (!ClientPrefs.ghostTapping) FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+			}
+			if (ClientPrefs.ghostTapping) {
+
+
+
+				return;
+			}
 			health -= 0.05 * healthLoss;
 			if(instakillOnMiss)
 			{
@@ -4450,7 +4464,7 @@ class PlayState extends MusicBeatState
 			totalPlayed++;
 			RecalculateRating(true);
 
-			FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+			//FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
 			// FlxG.sound.play(Paths.sound('missnote1'), 1, false);
 			// FlxG.log.add('played imss note');
 
@@ -4470,9 +4484,9 @@ class PlayState extends MusicBeatState
 			}
 
 			FlxG.camera.shake(ClientPrefs.missShakeIntensity * 0.01, 0.5, null, true, singAnimations[Std.int(Math.abs(direction))].endsWith('UP') || singAnimations[Std.int(Math.abs(direction))].endsWith('DOWN') ? flixel.util.FlxAxes.Y : flixel.util.FlxAxes.X);
-			if(char.hasMissAnimations) {
+			/*if(char.hasMissAnimations) {
 				char.playAnim(singAnimations[Std.int(Math.abs(direction))] + 'miss', true);
-			}
+			}*/
 			vocals.volume = 0;
 		}
 		callOnLuas('noteMissPress', [direction]);
