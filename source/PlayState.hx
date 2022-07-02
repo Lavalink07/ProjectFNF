@@ -1189,7 +1189,7 @@ class PlayState extends MusicBeatState
 		healthBarBG.y = FlxG.height * 0.89;
 		healthBarBG.screenCenter(X);
 		healthBarBG.scrollFactor.set();
-		healthBarBG.visible = !ClientPrefs.hideHud;
+		healthBarBG.visible = !ClientPrefs.hideHud && ClientPrefs.healthBarType != 'Disabled';
 		healthBarBG.xAdd = -4;
 		healthBarBG.yAdd = -4;
 		add(healthBarBG);
@@ -1199,25 +1199,26 @@ class PlayState extends MusicBeatState
 			'health', 0, 2);
 		healthBar.scrollFactor.set();
 		// healthBar
-		healthBar.visible = !ClientPrefs.hideHud;
+		healthBar.visible = !ClientPrefs.hideHud && ClientPrefs.healthBarType != 'Disabled';
 		healthBar.alpha = ClientPrefs.healthBarAlpha;
 		add(healthBar);
 		healthBarBG.sprTracker = healthBar;
 
 		iconP1 = new HealthIcon(boyfriend.healthIcon, true);
 		iconP1.y = healthBar.y - 75;
-		iconP1.visible = !ClientPrefs.hideHud;
+		iconP1.visible = !ClientPrefs.hideHud && ClientPrefs.healthBarType != 'Disabled';
 		iconP1.alpha = ClientPrefs.healthBarAlpha;
 		add(iconP1);
 
 		iconP2 = new HealthIcon(dad.healthIcon, false);
 		iconP2.y = healthBar.y - 75;
-		iconP2.visible = !ClientPrefs.hideHud;
+		iconP2.visible = !ClientPrefs.hideHud && ClientPrefs.healthBarType != 'Disabled';
 		iconP2.alpha = ClientPrefs.healthBarAlpha;
 		add(iconP2);
 		reloadHealthBarColors();
 
-		scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
+		var downScrollAccount:Int = ClientPrefs.downScroll ? 5 : FlxG.height - 50;
+		scoreTxt = new FlxText(0, ClientPrefs.healthBarType == 'Horizontal' ? healthBarBG.y + 36 : downScrollAccount, FlxG.width, "", 20);
 		scoreTxt.setFormat(Paths.font("vcr.ttf"), ClientPrefs.advancedScoreTxt ? 18 : 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		scoreTxt.scrollFactor.set();
 		scoreTxt.borderSize = 1.25;
@@ -1246,6 +1247,11 @@ class PlayState extends MusicBeatState
 		versionTxt.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionTxt);
 
+		if (ClientPrefs.healthBarType.startsWith('Vertical')) {
+			healthBar.angle = 90;
+			healthBar.x = ClientPrefs.healthBarType.endsWith('(left)') ? -245 : FlxG.width - 350;
+			healthBar.screenCenter(Y);
+		}
 		strumLineNotes.cameras = [camHUD];
 		grpNoteSplashes.cameras = [camHUD];
 		notes.cameras = [camHUD];
@@ -3059,11 +3065,36 @@ class PlayState extends MusicBeatState
 
 		var iconOffset:Int = 26;
 
-		iconP1.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) + (150 * iconP1.scale.x - 150) / 2 - iconOffset;
-		iconP2.x = healthBar.x + (healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (150 * iconP2.scale.x) / 2 - iconOffset * 2;
+		var axis:Float = ClientPrefs.healthBarType == 'Horizontal' ? healthBar.x : FlxG.height * 0.11;
+		var newP1:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthPercentageBar, 0, 100, 100, 0) * 0.01)) + (150 * iconP1.scale.x - 150) / 2 - iconOffset);
+		var oldP2:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (150 * iconP2.scale.x) / 2 - iconOffset * 2);
+		var newP2:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthPercentageBar, 0, 100, 100, 0) * 0.01)) - (150 * iconP2.scale.x) / 2 - iconOffset * 2);
 
-		if (health > 2)
-			health = 2;
+		if (ClientPrefs.healthBarType == 'Horizontal') {
+			iconP1.x = newP1;
+			iconP2.x = newP2;
+			if (healthPercentageBar > 100 || healthPercentageBar < 0 && !opponentPlay) {
+				healthBar.offset.x = oldP2 - newP2;
+				healthBarBG.offset.x = oldP2 - newP2;
+			} else {
+				healthBar.offset.x = 0;
+				healthBarBG.offset.x = 0;
+			}
+		} else {
+			iconP1.x = healthBar.x + 210;
+			iconP1.y = newP1;
+			iconP2.x = healthBar.x + 210;
+			iconP2.y = newP2;
+			if (healthPercentageBar > 100 || healthPercentageBar < 0 && !opponentPlay) {
+				healthBar.offset.y = oldP2 - newP2;
+				healthBarBG.offset.y = oldP2 - newP2;
+			} else {
+				healthBar.offset.y = 0;
+				healthBarBG.offset.y = 0;
+			}
+		}
+		/*if (health > 2)
+			health = 2;*/
 
 		if (healthPercentageBar < 20)
 			iconP1.animation.curAnim.curFrame = 1;

@@ -132,6 +132,14 @@ class VisualsUISubState extends BaseOptionsMenu
 		option.changeValue = 0.1;
 		option.decimals = 1;
 
+		var option:Option = new Option('Health Bar:',
+			"How should the Health Bar be positioned?",
+			'healthBarType',
+			'string',
+			'Horizontal',
+			['Vertical (left)', 'Vertical (right)', 'Horizontal', 'Disabled']);
+		addOption(option);
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',

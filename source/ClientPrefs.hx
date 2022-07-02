@@ -72,6 +72,7 @@ class ClientPrefs {
 	public static var missAnimsSounds:Bool = true;
 	public static var advancedScoreTxt:Bool = true;
 	public static var scoreTxtUnderlayOpacity:Float = 0.3;
+	public static var healthBarType:String = 'Horizontal';
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -153,6 +154,7 @@ class ClientPrefs {
 		FlxG.save.data.missAnimsSounds = missAnimsSounds;
 		FlxG.save.data.advancedScoreTxt = advancedScoreTxt;
 		FlxG.save.data.scoreTxtUnderlayOpacity = scoreTxtUnderlayOpacity;
+		FlxG.save.data.healthBarType = healthBarType;
 	
 		FlxG.save.flush();
 
@@ -302,6 +304,9 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.scoreTxtUnderlayOpacity != null) {
 			scoreTxtUnderlayOpacity = FlxG.save.data.scoreTxtUnderlayOpacity;
+		}
+		if(FlxG.save.data.healthBarType != null) {
+			healthBarType = FlxG.save.data.healthBarType;
 		}
 		
 		// flixel automatically saves your volume!
