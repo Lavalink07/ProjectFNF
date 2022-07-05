@@ -53,6 +53,34 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		option.onChange = onChangeAntiAliasing; //Changing onChange is only needed if you want to make a special interaction after it changes the value
 		addOption(option);
 
+		var option:Option = new Option('Hide All Non-Character Sprites',
+			'If checked, all non-character sprites will be hidden, giving a massive performance boost\nYou can still hide characters individually below',
+			'hideAllSprites',
+			'bool',
+			false);
+		addOption(option);
+
+		var option:Option = new Option('Hide Opponent',
+			'If checked, the Opponent will be hidden, giving a slight performance boost',
+			'hideOpponent',
+			'bool',
+			false);
+		addOption(option);
+
+		var option:Option = new Option('Hide Girlfriend',
+			'If checked, Girlfriend will be hidden, giving a slight performance boost',
+			'hideGf',
+			'bool',
+			false);
+		addOption(option);
+
+		var option:Option = new Option('Hide Boyfriend',
+			'If checked, Boyfriend will be hidden, giving a slight performance boost',
+			'hideBf',
+			'bool',
+			false);
+		addOption(option);
+
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
 		var option:Option = new Option('Framerate',
 			"Pretty self explanatory, isn't it?",

@@ -222,6 +222,7 @@ class PlayState extends MusicBeatState
 	public var camHUD:FlxCamera;
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
+	public var camChars:FlxCamera; // Special camera for characters
 	public var cameraSpeed:Float = 1;
 
 	var dialogue:Array<String> = ['blah blah blah', 'coolswag'];
@@ -331,9 +332,11 @@ class PlayState extends MusicBeatState
 
 	var precacheList:Map<String, String> = new Map<String, String>();
 
+	private var oldLQ:Bool = ClientPrefs.lowQuality; // Avoids loading things into RAM that won't be rendered
 	override public function create()
 	{
 		Paths.clearStoredMemory();
+		if (ClientPrefs.hideAllSprites) ClientPrefs.lowQuality = true;
 
 		// for lua
 		instance = this;
@@ -409,10 +412,17 @@ class PlayState extends MusicBeatState
 		camGame = new FlxCamera();
 		camHUD = new FlxCamera();
 		camOther = new FlxCamera();
+		camChars = new FlxCamera();
 		camHUD.bgColor.alpha = 0;
 		camOther.bgColor.alpha = 0;
+		camChars.bgColor.alpha = 0;
 
 		FlxG.cameras.reset(camGame);
+		if (ClientPrefs.hideAllSprites) {
+			FlxG.cameras.add(camChars);
+			FlxG.camera = camChars;
+			camChars.alpha = 0;
+		}
 		FlxG.cameras.add(camHUD);
 		FlxG.cameras.add(camOther);
 		grpNoteSplashes = new FlxTypedGroup<NoteSplash>();
@@ -2122,6 +2132,10 @@ class PlayState extends MusicBeatState
 								countdownReady.destroy();
 							}
 						});
+						if (ClientPrefs.hideAllSprites) switchObjectState(camGame, false);
+						if (ClientPrefs.hideOpponent) switchObjectState(dad, false);
+						if (ClientPrefs.hideGf) switchObjectState(gf, false);
+						if (ClientPrefs.hideBf) switchObjectState(boyfriend, false);
 						FlxG.sound.play(Paths.sound('intro2' + introSoundsSuffix), 0.6);
 					case 2:
 						countdownSet = new FlxSprite().loadGraphic(Paths.image(introAlts[1]));
@@ -2143,6 +2157,7 @@ class PlayState extends MusicBeatState
 							}
 						});
 						FlxG.sound.play(Paths.sound('intro1' + introSoundsSuffix), 0.6);
+						if (ClientPrefs.hideAllSprites) switchObjectState(camChars, true);
 					case 3:
 						countdownGo = new FlxSprite().loadGraphic(Paths.image(introAlts[2]));
 						countdownGo.cameras = [camHUD];
@@ -3342,6 +3357,16 @@ class PlayState extends MusicBeatState
 		}
 		#end
 
+		if (ClientPrefs.hideAllSprites && camChars.active) {
+			gf.cameras = [camChars];
+			dad.cameras = [camChars];
+			boyfriend.cameras = [camChars];
+			if (!startingSong) {
+				if (ClientPrefs.hideGf) switchObjectState(gf, false);
+				if (ClientPrefs.hideOpponent) switchObjectState(dad, false);
+				if (ClientPrefs.hideBf) switchObjectState(boyfriend, false);
+			}
+		}
 		setOnLuas('cameraX', camFollowPos.x);
 		setOnLuas('cameraY', camFollowPos.y);
 		setOnLuas('botPlay', cpuControlled);
@@ -3706,7 +3731,7 @@ class PlayState extends MusicBeatState
 
 			case 'Screen Shake':
 				var valuesArray:Array<String> = [value1, value2];
-				var targetsArray:Array<FlxCamera> = [camGame, camHUD];
+				var targetsArray:Array<FlxCamera> = [camGame, camHUD, camChars];
 				for (i in 0...targetsArray.length) {
 					var split:Array<String> = valuesArray[i].split(',');
 					var duration:Float = 0;
@@ -3864,6 +3889,7 @@ class PlayState extends MusicBeatState
 		if (direction.endsWith("LEFT")) addX -= ClientPrefs.cameraMoveIntensity;
 		if (direction.endsWith("RIGHT")) addX += ClientPrefs.cameraMoveIntensity;
 		if (SONG.notes[curSection].gfSection) {
+			if (!gf.visible) return;
 			camFollow.set(gf.getMidpoint().x, gf.getMidpoint().y);
 			camFollow.x += gf.cameraPosition[0] + girlfriendCameraOffset[0] + addX;
 			camFollow.y += gf.cameraPosition[1] + girlfriendCameraOffset[1] + addY;
@@ -3871,6 +3897,7 @@ class PlayState extends MusicBeatState
 		} else
 		if(isDad)
 		{
+			if (!dad.visible) return;
 			camFollow.set(dad.getMidpoint().x + 150, dad.getMidpoint().y - 100);
 			camFollow.x += dad.cameraPosition[0] + opponentCameraOffset[0] + addX;
 			camFollow.y += dad.cameraPosition[1] + opponentCameraOffset[1] + addY;
@@ -3878,6 +3905,7 @@ class PlayState extends MusicBeatState
 		}
 		else
 		{
+			if (!boyfriend.visible) return;
 			camFollow.set(boyfriend.getMidpoint().x - 100, boyfriend.getMidpoint().y - 100);
 			camFollow.x -= boyfriend.cameraPosition[0] - boyfriendCameraOffset[0] - addX;
 			camFollow.y += boyfriend.cameraPosition[1] + boyfriendCameraOffset[1] + addY;
@@ -4657,8 +4685,8 @@ class PlayState extends MusicBeatState
 		var char:Character = opponentPlay ? boyfriend : dad;
 		if (note.gfNote && gf != null) char = gf;
 		var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];
-		if (char != gf) {
-			if (!SONG.notes[curSection].mustHitSection == !opponentPlay) moveCamera(!opponentPlay, animToPlay);
+		if (char != gf || !gf.visible) {
+			if (!SONG.notes[curSection].mustHitSection == !opponentPlay || (opponentPlay ? !dad.visible : !boyfriend.visible)) moveCamera(!opponentPlay, animToPlay);
 		} else if (SONG.notes[curSection].gfSection) moveCamera(!opponentPlay, animToPlay);
 		if(note.noteType == 'Hey!' && char.animOffsets.exists('hey')) {
 			char.playAnim('hey', true);
@@ -4769,8 +4797,8 @@ class PlayState extends MusicBeatState
 
 			var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];
 
-			if (char != gf) {
-				if (SONG.notes[curSection].mustHitSection == !opponentPlay) moveCamera(opponentPlay, animToPlay);
+			if (char != gf || !gf.visible) {
+				if (SONG.notes[curSection].mustHitSection == !opponentPlay || (opponentPlay ? !boyfriend.visible : !dad.visible)) moveCamera(opponentPlay, animToPlay);
 			} else if (!SONG.notes[curSection].gfSection) moveCamera(!opponentPlay, animToPlay);
 			if(!note.noAnimation) {
 				/*if(note.gfNote)
@@ -5041,6 +5069,7 @@ class PlayState extends MusicBeatState
 	}
 
 	override function destroy() {
+		ClientPrefs.lowQuality = oldLQ;
 		for (lua in luaArray) {
 			lua.call('onDestroy', []);
 			lua.stop();
@@ -5333,6 +5362,13 @@ class PlayState extends MusicBeatState
 		setOnLuas('rating', ratingPercent);
 		setOnLuas('ratingName', ratingName);
 		setOnLuas('ratingFC', ratingFC);
+	}
+
+	public function switchObjectState(object:FlxBasic, newState:Bool):Void {
+		FlxTween.tween(object, {alpha: newState ? 1 : 0}, Conductor.crochet / 1000, { ease: FlxEase.cubeInOut, onComplete: function(twn:FlxTween) {
+			object.visible = newState;
+			object.active = newState;
+		}});
 	}
 
 	#if ACHIEVEMENTS_ALLOWED
