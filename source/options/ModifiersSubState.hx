@@ -48,6 +48,13 @@ class ModifiersSubState extends BaseOptionsMenu
 		option.decimals = 1;
 		addOption(option);
 
+		var option:Option = new Option('Misses Decrease Max Health', // Name
+			'If checked, misses will lower your maximum health by damage taken.', // Description
+			'missesDecreaseMaxHealth', // Save data variable name
+			'bool', // Variable type
+			false); // Default value
+		addOption(option);
+
 		super();
 	}
 }

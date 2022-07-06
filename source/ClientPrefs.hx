@@ -79,6 +79,7 @@ class ClientPrefs {
 	public static var hideOpponent:Bool = false;
 	public static var hideGf:Bool = false;
 	public static var hideBf:Bool = false;
+	public static var missesDecreaseMaxHealth:Bool = false;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -165,6 +166,7 @@ class ClientPrefs {
 		FlxG.save.data.hideOpponent = hideOpponent;
 		FlxG.save.data.hideGf = hideGf;
 		FlxG.save.data.hideBf = hideBf;
+		FlxG.save.data.missesDecreaseMaxHealth = missesDecreaseMaxHealth;
 	
 		FlxG.save.flush();
 
@@ -329,6 +331,9 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.hideBf != null) {
 			hideBf = FlxG.save.data.hideBf;
+		}
+		if(FlxG.save.data.missesDecreaseMaxHealth != null) {
+			missesDecreaseMaxHealth = FlxG.save.data.missesDecreaseMaxHealth;
 		}
 		
 		// flixel automatically saves your volume!

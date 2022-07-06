@@ -4560,6 +4560,7 @@ class PlayState extends MusicBeatState
 		var prevCombo:Int = combo;
 		combo = 0;
 		health -= daNote.missHealth * healthLoss;
+		if (ClientPrefs.missesDecreaseMaxHealth) maxHealth -= daNote.missHealth * healthLoss;
 		
 		if(instakillOnMiss)
 		{
@@ -4630,6 +4631,7 @@ class PlayState extends MusicBeatState
 				return;
 			}
 			health -= 0.05 * healthLoss;
+			if (ClientPrefs.missesDecreaseMaxHealth) maxHealth -= 0.05 * healthLoss;
 			if(instakillOnMiss)
 			{
 				vocals.volume = 0;
