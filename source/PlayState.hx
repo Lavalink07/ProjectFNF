@@ -334,6 +334,7 @@ class PlayState extends MusicBeatState
 	var precacheList:Map<String, String> = new Map<String, String>();
 
 	private var oldLQ:Bool = ClientPrefs.lowQuality; // Avoids loading things into RAM that won't be rendered
+	private var vignette:FlxSprite;
 	override public function create()
 	{
 		Paths.clearStoredMemory();
@@ -1404,6 +1405,8 @@ class PlayState extends MusicBeatState
 		} else if(ClientPrefs.pauseMusic != 'None') {
 			precacheList.set(Paths.formatToSongPath(ClientPrefs.pauseMusic), 'music');
 		}
+
+		precacheList.set('vignette', 'image');
 
 		#if desktop
 		// Updating Discord Rich Presence.
@@ -3072,6 +3075,13 @@ class PlayState extends MusicBeatState
 			}
 			holdStrainTimer = Math.max(0, holdStrainTimer - elapsed);
 		}
+
+		if (vignette == null) {
+			vignette = new FlxSprite().loadGraphic(Paths.image('vignette'));
+			vignette.cameras = [camHUD];
+			add(vignette);
+		}
+		vignette.alpha = ClientPrefs.vignetteStrength - (health / maxHealth);
 
 		var mult:Float = FlxMath.lerp(1, iconP1.scale.x, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1));
 		iconP1.scale.set(mult, mult);

@@ -140,6 +140,17 @@ class VisualsUISubState extends BaseOptionsMenu
 			['Vertical (left)', 'Vertical (right)', 'Horizontal', 'Disabled']);
 		addOption(option);
 
+		var option:Option = new Option('Vignette Strength',
+			'Defines the strength of an effect that will darken your screen if your health gets low\nThe effect is proportional to maximum health',
+			'vignetteStrength',
+			'percent',
+			0.7);
+		addOption(option);
+		option.scrollSpeed = 0;
+		option.minValue = 0.0;
+		option.maxValue = 1;
+		option.changeValue = 0.05;
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',
