@@ -179,6 +179,7 @@ class PlayState extends MusicBeatState
 
 	public var gfSpeed:Int = 1;
 	public var health:Float = 1;
+	public var maxHealth:Float = 2;
 	public var healthDrained:Float = 1;
 	public var healthPercentageDisplay:Float = 50;
 	public var healthPercentageBar:Float = 50;
@@ -407,6 +408,8 @@ class PlayState extends MusicBeatState
 		practiceMode = ClientPrefs.getGameplaySetting('practice', false);
 		cpuControlled = ClientPrefs.getGameplaySetting('botplay', false);
 		opponentPlay = ClientPrefs.getGameplaySetting('opponentplay', false);
+		health = ClientPrefs.getGameplaySetting('startinghealth', 0.5) * 2.0;
+		maxHealth = ClientPrefs.getGameplaySetting('maxhealth', 1) * 2.0;
 
 		// var gameCam:FlxCamera = FlxG.camera;
 		camGame = new FlxCamera();
@@ -3056,7 +3059,7 @@ class PlayState extends MusicBeatState
 		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
 		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
 
-		if (health > 2) health = 2;
+		if (health > maxHealth) health = maxHealth;
 		healthPercentageDisplay = health / 0.02; // Don't round this for smooth health bar movement
 		healthPercentageBar = opponentPlay ? Math.max(0, Math.min(100, 100 - healthPercentageDisplay)) : healthPercentageDisplay;
 		if (ClientPrefs.advancedScoreTxt && oldPercentage != Highscore.floorDecimal(healthPercentageDisplay, 0))
