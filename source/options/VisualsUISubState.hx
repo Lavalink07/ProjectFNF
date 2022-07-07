@@ -151,6 +151,18 @@ class VisualsUISubState extends BaseOptionsMenu
 		option.maxValue = 1;
 		option.changeValue = 0.05;
 
+		var option:Option = new Option('Camera Zoom',
+			"Overrides the camera zoom value for all stages.\nSet to 1.0 to use the stage's zoom value",
+			'cameraZoom',
+			'float',
+			1);
+		addOption(option);
+		option.scrollSpeed = 1.3;
+		option.minValue = 0.1;
+		option.maxValue = 2.0;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',

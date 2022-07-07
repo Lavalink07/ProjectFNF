@@ -510,7 +510,7 @@ class PlayState extends MusicBeatState
 			};
 		}
 
-		defaultCamZoom = stageData.defaultZoom;
+		defaultCamZoom = ClientPrefs.cameraZoom != 1.0 ? ClientPrefs.cameraZoom : stageData.defaultZoom;
 		isPixelStage = stageData.isPixelStage;
 		BF_X = stageData.boyfriend[0];
 		BF_Y = stageData.boyfriend[1];

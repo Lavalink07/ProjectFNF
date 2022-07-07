@@ -81,6 +81,7 @@ class ClientPrefs {
 	public static var hideBf:Bool = false;
 	public static var missesDecreaseMaxHealth:Bool = false;
 	public static var vignetteStrength:Float = 0.7;
+	public static var cameraZoom:Float = 1.0;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -169,6 +170,7 @@ class ClientPrefs {
 		FlxG.save.data.hideBf = hideBf;
 		FlxG.save.data.missesDecreaseMaxHealth = missesDecreaseMaxHealth;
 		FlxG.save.data.vignetteStrength = vignetteStrength;
+		FlxG.save.data.cameraZoom = cameraZoom;
 	
 		FlxG.save.flush();
 
@@ -339,6 +341,9 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.vignetteStrength != null) {
 			vignetteStrength = FlxG.save.data.vignetteStrength;
+		}
+		if(FlxG.save.data.cameraZoom != null) {
+			cameraZoom = FlxG.save.data.cameraZoom;
 		}
 		
 		// flixel automatically saves your volume!
