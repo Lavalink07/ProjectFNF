@@ -187,6 +187,13 @@ class VisualsUISubState extends BaseOptionsMenu
 		option.changeValue = 0.1;
 		option.decimals = 1;
 
+		var option:Option = new Option('Fixed Combo Sprite Position', //Name
+			"If unchecked, your rating and combo number will be a part of the game world\nand won't follow the camera.", //Description
+			'fixedComboSprPos', //Save data variable name
+			'bool', //Variable type
+			false); //Default value
+		addOption(option);
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',

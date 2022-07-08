@@ -89,6 +89,7 @@ class ClientPrefs {
 	public static var permaMissPenaltyCanKill:Bool = false;
 	public static var playerLaneUnderlayOpacity:Float = 0;
 	public static var opponentLaneUnderlayOpacity:Float = 0;
+	public static var fixedComboSprPos:Bool = false;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -185,6 +186,7 @@ class ClientPrefs {
 		FlxG.save.data.permaMissPenaltyCanKill = permaMissPenaltyCanKill;
 		FlxG.save.data.playerLaneUnderlayOpacity = playerLaneUnderlayOpacity;
 		FlxG.save.data.opponentLaneUnderlayOpacity = opponentLaneUnderlayOpacity;
+		FlxG.save.data.fixedComboSprPos = fixedComboSprPos;
 	
 		FlxG.save.flush();
 
@@ -379,6 +381,9 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.opponentLaneUnderlayOpacity != null) {
 			opponentLaneUnderlayOpacity = FlxG.save.data.opponentLaneUnderlayOpacity;
+		}
+		if(FlxG.save.data.fixedComboSprPos != null) {
+			fixedComboSprPos = FlxG.save.data.fixedComboSprPos;
 		}
 		
 		// flixel automatically saves your volume!
