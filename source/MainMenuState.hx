@@ -47,6 +47,7 @@ class MainMenuState extends MusicBeatState
 	var camFollow:FlxObject;
 	var camFollowPos:FlxObject;
 	var debugKeys:Array<FlxKey>;
+	var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
 
 	override function create()
 	{
@@ -75,7 +76,6 @@ class MainMenuState extends MusicBeatState
 		persistentUpdate = persistentDraw = true;
 
 		var yScroll:Float = Math.max(0.25 - (0.05 * (optionShit.length - 4)), 0.1);
-		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
 		bg.scrollFactor.set(0, yScroll);
 		bg.setGraphicSize(Std.int(bg.width * 1.175));
 		bg.updateHitbox();
@@ -231,6 +231,11 @@ class MainMenuState extends MusicBeatState
 									spr.kill();
 								}
 							});
+							FlxTween.tween(FlxG.camera, {zoom: 5}, 0.7, {ease: FlxEase.expoIn});
+							FlxTween.tween(bg, {angle: 45}, 0.7, {ease: FlxEase.expoIn});
+							FlxTween.tween(magenta, {angle: 45}, 0.7, {ease: FlxEase.expoIn});
+							FlxTween.tween(bg, {alpha: 0}, 0.7, {ease: FlxEase.expoIn});
+							FlxTween.tween(magenta, {alpha: 0}, 0.7, {ease: FlxEase.expoIn});
 						}
 						else
 						{
