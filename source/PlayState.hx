@@ -3068,6 +3068,10 @@ class PlayState extends MusicBeatState
 			tempMissPenalty -= toRemove;
 		}
 
+		var damage:Float = ClientPrefs.permaMissPenaltyDPS * 0.02 * elapsed * songMisses;
+		if ((notes.length > 0 || unspawnNotes.length > 0 || eventNotes.length > 0) && (health - damage > 0 || ClientPrefs.permaMissPenaltyCanKill))
+			health -= damage;
+
 		if (health > maxHealth) health = maxHealth;
 		healthPercentageDisplay = health / 0.02; // Don't round this for smooth health bar movement
 		healthPercentageBar = opponentPlay ? Math.max(0, Math.min(100, 100 - healthPercentageDisplay)) : healthPercentageDisplay;

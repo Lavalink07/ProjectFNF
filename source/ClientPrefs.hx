@@ -85,6 +85,8 @@ class ClientPrefs {
 	public static var tempMissPenalty:Float = 0;
 	public static var tempMissPenaltyDPS:Float = 0;
 	public static var tempMissPenaltyCanKill:Bool = false;
+	public static var permaMissPenaltyDPS:Float = 0;
+	public static var permaMissPenaltyCanKill:Bool = false;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -177,6 +179,8 @@ class ClientPrefs {
 		FlxG.save.data.tempMissPenalty = tempMissPenalty;
 		FlxG.save.data.tempMissPenaltyDPS = tempMissPenaltyDPS;
 		FlxG.save.data.tempMissPenaltyCanKill = tempMissPenaltyCanKill;
+		FlxG.save.data.permaMissPenaltyDPS = permaMissPenaltyDPS;
+		FlxG.save.data.permaMissPenaltyCanKill = permaMissPenaltyCanKill;
 	
 		FlxG.save.flush();
 
@@ -359,6 +363,12 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.tempMissPenaltyCanKill != null) {
 			tempMissPenaltyCanKill = FlxG.save.data.tempMissPenaltyCanKill;
+		}
+		if(FlxG.save.data.permaMissPenaltyDPS != null) {
+			permaMissPenaltyDPS = FlxG.save.data.permaMissPenaltyDPS;
+		}
+		if(FlxG.save.data.permaMissPenaltyCanKill != null) {
+			permaMissPenaltyCanKill = FlxG.save.data.permaMissPenaltyCanKill;
 		}
 		
 		// flixel automatically saves your volume!

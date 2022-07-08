@@ -87,6 +87,26 @@ class ModifiersSubState extends BaseOptionsMenu
 			false); // Default value
 		addOption(option);
 
+		var option:Option = new Option('Perma Miss Penalty DPS', // Name
+			'How much health will be drained every second', // Description
+			'permaMissPenaltyDPS', // Save data variable name
+			'float', // Variable type
+			0); // Default value
+		option.displayFormat = "+%v%";
+		option.scrollSpeed = 1.6;
+		option.minValue = 0.0;
+		option.maxValue = 15.0;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+		addOption(option);
+
+		var option:Option = new Option('Perma Miss Penalty Can Kill', // Name
+			'If checked, permanent miss penalty can be lethal.', // Description
+			'permaMissPenaltyCanKill', // Save data variable name
+			'bool', // Variable type
+			false); // Default value
+		addOption(option);
+
 		super();
 	}
 }
