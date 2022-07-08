@@ -335,6 +335,7 @@ class PlayState extends MusicBeatState
 
 	private var oldLQ:Bool = ClientPrefs.lowQuality; // Avoids loading things into RAM that won't be rendered
 	private var vignette:FlxSprite;
+	private var tempMissPenalty:Float = 0;
 	override public function create()
 	{
 		Paths.clearStoredMemory();
@@ -3061,6 +3062,11 @@ class PlayState extends MusicBeatState
 
 		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
 		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
+		var toRemove:Float = Math.min(tempMissPenalty, ClientPrefs.tempMissPenaltyDPS * 0.02 * elapsed);
+		if (health - toRemove > 0 || ClientPrefs.tempMissPenaltyCanKill) {
+			health -= toRemove;
+			tempMissPenalty -= toRemove;
+		}
 
 		if (health > maxHealth) health = maxHealth;
 		healthPercentageDisplay = health / 0.02; // Don't round this for smooth health bar movement
@@ -4571,6 +4577,7 @@ class PlayState extends MusicBeatState
 		combo = 0;
 		health -= daNote.missHealth * healthLoss;
 		if (ClientPrefs.missesDecreaseMaxHealth) maxHealth -= daNote.missHealth * healthLoss;
+		tempMissPenalty += daNote.missHealth * healthLoss * ClientPrefs.tempMissPenalty;
 		
 		if(instakillOnMiss)
 		{
@@ -4642,6 +4649,7 @@ class PlayState extends MusicBeatState
 			}
 			health -= 0.05 * healthLoss;
 			if (ClientPrefs.missesDecreaseMaxHealth) maxHealth -= 0.05 * healthLoss;
+			tempMissPenalty += 0.05 * healthLoss * ClientPrefs.tempMissPenalty;
 			if(instakillOnMiss)
 			{
 				vocals.volume = 0;
@@ -4807,8 +4815,11 @@ class PlayState extends MusicBeatState
 				lastHitStrumTime = note.strumTime;
 				holdStrainTimer = 0.04;
 			}
-			health += note.hitHealth * healthGain;
-			healthDrained -= note.hitHealth * healthGain;
+			var toAdd:Float = note.hitHealth * healthGain;
+			toAdd -= Math.min(toAdd, tempMissPenalty);
+			tempMissPenalty -= note.hitHealth * healthGain - toAdd;
+			health += toAdd;
+			healthDrained -= toAdd;
 
 			var animToPlay:String = singAnimations[Std.int(Math.abs(note.noteData))];
 

@@ -82,6 +82,9 @@ class ClientPrefs {
 	public static var missesDecreaseMaxHealth:Bool = false;
 	public static var vignetteStrength:Float = 0.7;
 	public static var cameraZoom:Float = 1.0;
+	public static var tempMissPenalty:Float = 0;
+	public static var tempMissPenaltyDPS:Float = 0;
+	public static var tempMissPenaltyCanKill:Bool = false;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -171,6 +174,9 @@ class ClientPrefs {
 		FlxG.save.data.missesDecreaseMaxHealth = missesDecreaseMaxHealth;
 		FlxG.save.data.vignetteStrength = vignetteStrength;
 		FlxG.save.data.cameraZoom = cameraZoom;
+		FlxG.save.data.tempMissPenalty = tempMissPenalty;
+		FlxG.save.data.tempMissPenaltyDPS = tempMissPenaltyDPS;
+		FlxG.save.data.tempMissPenaltyCanKill = tempMissPenaltyCanKill;
 	
 		FlxG.save.flush();
 
@@ -344,6 +350,15 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.cameraZoom != null) {
 			cameraZoom = FlxG.save.data.cameraZoom;
+		}
+		if(FlxG.save.data.tempMissPenalty != null) {
+			tempMissPenalty = FlxG.save.data.tempMissPenalty;
+		}
+		if(FlxG.save.data.tempMissPenaltyDPS != null) {
+			tempMissPenaltyDPS = FlxG.save.data.tempMissPenaltyDPS;
+		}
+		if(FlxG.save.data.tempMissPenaltyCanKill != null) {
+			tempMissPenaltyCanKill = FlxG.save.data.tempMissPenaltyCanKill;
 		}
 		
 		// flixel automatically saves your volume!
