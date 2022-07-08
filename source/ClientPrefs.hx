@@ -87,6 +87,8 @@ class ClientPrefs {
 	public static var tempMissPenaltyCanKill:Bool = false;
 	public static var permaMissPenaltyDPS:Float = 0;
 	public static var permaMissPenaltyCanKill:Bool = false;
+	public static var playerLaneUnderlayOpacity:Float = 0;
+	public static var opponentLaneUnderlayOpacity:Float = 0;
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -181,6 +183,8 @@ class ClientPrefs {
 		FlxG.save.data.tempMissPenaltyCanKill = tempMissPenaltyCanKill;
 		FlxG.save.data.permaMissPenaltyDPS = permaMissPenaltyDPS;
 		FlxG.save.data.permaMissPenaltyCanKill = permaMissPenaltyCanKill;
+		FlxG.save.data.playerLaneUnderlayOpacity = playerLaneUnderlayOpacity;
+		FlxG.save.data.opponentLaneUnderlayOpacity = opponentLaneUnderlayOpacity;
 	
 		FlxG.save.flush();
 
@@ -369,6 +373,12 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.permaMissPenaltyCanKill != null) {
 			permaMissPenaltyCanKill = FlxG.save.data.permaMissPenaltyCanKill;
+		}
+		if(FlxG.save.data.playerLaneUnderlayOpacity != null) {
+			playerLaneUnderlayOpacity = FlxG.save.data.playerLaneUnderlayOpacity;
+		}
+		if(FlxG.save.data.opponentLaneUnderlayOpacity != null) {
+			opponentLaneUnderlayOpacity = FlxG.save.data.opponentLaneUnderlayOpacity;
 		}
 		
 		// flixel automatically saves your volume!

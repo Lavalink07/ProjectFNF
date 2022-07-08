@@ -336,6 +336,8 @@ class PlayState extends MusicBeatState
 	private var oldLQ:Bool = ClientPrefs.lowQuality; // Avoids loading things into RAM that won't be rendered
 	private var vignette:FlxSprite;
 	private var tempMissPenalty:Float = 0;
+	private var playerLaneUnderlay:FlxSprite;
+	private var opponentLaneUnderlay:FlxSprite;
 	override public function create()
 	{
 		Paths.clearStoredMemory();
@@ -1059,6 +1061,16 @@ class PlayState extends MusicBeatState
 		if(ClientPrefs.downScroll) strumLine.y = FlxG.height - 150;
 		strumLine.scrollFactor.set();
 
+		playerLaneUnderlay = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height, FlxColor.BLACK);
+		playerLaneUnderlay.alpha = ClientPrefs.playerLaneUnderlayOpacity;
+		playerLaneUnderlay.scrollFactor.set();
+		add(playerLaneUnderlay);
+
+		opponentLaneUnderlay = new FlxSprite(0, 0).makeGraphic(110 * 4 + 50, FlxG.height, FlxColor.BLACK);
+		opponentLaneUnderlay.alpha = ClientPrefs.opponentLaneUnderlayOpacity;
+		opponentLaneUnderlay.scrollFactor.set();
+		if (!ClientPrefs.middleScroll) add(opponentLaneUnderlay);
+
 		var showTime:Bool = (ClientPrefs.timeBarType != 'Disabled');
 		timeTxt = new FlxText(STRUM_X + (FlxG.width / 2) - 248, 19, 400, "", 32);
 		timeTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1279,6 +1291,8 @@ class PlayState extends MusicBeatState
 		timeBar.cameras = [camHUD];
 		timeBarBG.cameras = [camHUD];
 		timeTxt.cameras = [camHUD];
+		playerLaneUnderlay.cameras = [camHUD];
+		opponentLaneUnderlay.cameras = [camHUD];
 		doof.cameras = [camHUD];
 		versionTxt.cameras = [camHUD];
 
@@ -2048,6 +2062,8 @@ class PlayState extends MusicBeatState
 
 			generateStaticArrows(0);
 			generateStaticArrows(1);
+			playerLaneUnderlay.x = playerStrums.members[0].x - 25;
+			opponentLaneUnderlay.x = opponentStrums.members[0].x - 25;
 			for (i in 0...playerStrums.length) {
 				setOnLuas('defaultPlayerStrumX' + i, playerStrums.members[i].x);
 				setOnLuas('defaultPlayerStrumY' + i, playerStrums.members[i].y);

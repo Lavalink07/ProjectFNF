@@ -163,6 +163,30 @@ class VisualsUISubState extends BaseOptionsMenu
 		option.changeValue = 0.1;
 		option.decimals = 1;
 
+		var option:Option = new Option('Player Lane Underlay Opacity',
+			'How opaque should be an underlay for the player lane.',
+			'playerLaneUnderlayOpacity',
+			'percent',
+			0);
+		addOption(option);
+		option.scrollSpeed = 1.6;
+		option.minValue = 0.0;
+		option.maxValue = 1;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+
+		var option:Option = new Option('Opponent Lane Underlay Opacity',
+			'How opaque should be an underlay for the opponent lane.',
+			'opponentLaneUnderlayOpacity',
+			'percent',
+			0);
+		addOption(option);
+		option.scrollSpeed = 1.6;
+		option.minValue = 0.0;
+		option.maxValue = 1;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+
 		#if !mobile
 		var option:Option = new Option('FPS Counter',
 			'If unchecked, hides FPS Counter.',
