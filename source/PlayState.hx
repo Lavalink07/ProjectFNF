@@ -2513,6 +2513,8 @@ class PlayState extends MusicBeatState
 				{
 					gottaHitNote = !section.mustHitSection;
 				}
+				if (gottaHitNote) { if (ClientPrefs.getGameplaySetting('mirrorplayer', false)) daNoteData = -(daNoteData - 3); }
+				else if (ClientPrefs.getGameplaySetting('mirroropponent', false)) daNoteData = -(daNoteData - 3);
 				if (opponentPlay) gottaHitNote = !gottaHitNote;
 
 				var oldNote:Note;

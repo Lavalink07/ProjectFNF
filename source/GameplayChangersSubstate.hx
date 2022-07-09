@@ -109,6 +109,12 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 		var option:GameplayOption = new GameplayOption('Play as Opponent', 'opponentplay', 'bool', false);
 		optionsArray.push(option);
+
+		var option:GameplayOption = new GameplayOption('Mirror Player Notes', 'mirrorplayer', 'bool', false);
+		optionsArray.push(option);
+
+		var option:GameplayOption = new GameplayOption('Mirror Opponent Notes', 'mirroropponent', 'bool', false);
+		optionsArray.push(option);
 	}
 
 	public function getOptionByName(name:String)

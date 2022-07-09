@@ -52,7 +52,9 @@ class ClientPrefs {
 		'botplay' => false,
 		'opponentplay' => false,
 		'startinghealth' => 0.5,
-		'maxhealth' => 1
+		'maxhealth' => 1,
+		'mirrorplayer' => false,
+		'mirroropponent' => false
 	];
 
 	public static var comboOffset:Array<Int> = [0, 0, 0, 0];
