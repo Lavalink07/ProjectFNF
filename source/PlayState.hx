@@ -2339,7 +2339,7 @@ class PlayState extends MusicBeatState
 				new FlxTextFormatMarkerPair(blackFormat, '=')
 			]);
 
-		if(ClientPrefs.scoreZoom && !miss && !cpuControlled)
+		if(ClientPrefs.scoreZoom && !miss/* && !cpuControlled*/)
 		{
 			if(scoreTxtTween != null) {
 				scoreTxtTween.cancel();
@@ -3334,7 +3334,7 @@ class PlayState extends MusicBeatState
 							goodNoteHit(daNote);
 							if (!daNote.wasGoodHit) strainKeys[daNote.noteData] += songSpeed * (holdStrainTimer > 0 ? 0.2 : 0.05);
 						}
-					} else if(daNote.strumTime <= Conductor.songPosition || (daNote.isSustainNote && daNote.canBeHit && daNote.mustPress)) {
+					} else if(!daNote.ignoreNote && !daNote.hitCausesMiss && (daNote.strumTime <= Conductor.songPosition || (daNote.isSustainNote && daNote.canBeHit && daNote.mustPress))) {
 						goodNoteHit(daNote);
 					}
 				}
@@ -3370,7 +3370,7 @@ class PlayState extends MusicBeatState
 				// Kill extremely late notes and cause misses
 				if (Conductor.songPosition > noteKillOffset + daNote.strumTime)
 				{
-					if (daNote.mustPress && !cpuControlled &&!daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit)) {
+					if (daNote.mustPress && /*!cpuControlled &&*/!daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit)) {
 						noteMiss(daNote);
 					}
 
