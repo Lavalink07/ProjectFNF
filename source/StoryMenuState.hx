@@ -26,6 +26,8 @@ class StoryMenuState extends MusicBeatState
 	public static var weekCompleted:Map<String, Bool> = new Map<String, Bool>();
 
 	var scoreText:FlxText;
+	var maniaScoreText:FlxText;
+	var performancePoints:Float = 0;
 
 	private static var lastDifficultyName:String = '';
 	var curDifficulty:Int = 1;
@@ -61,6 +63,8 @@ class StoryMenuState extends MusicBeatState
 
 		scoreText = new FlxText(10, 10, 0, "SCORE: 49324858", 36);
 		scoreText.setFormat("VCR OSD Mono", 32);
+		maniaScoreText = new FlxText(scoreText.x + scoreText.width + 20, 10, 0, "o!mania: 49324858", 36);
+		maniaScoreText.setFormat("VCR OSD Mono", 32);
 
 		txtWeekTitle = new FlxText(FlxG.width * 0.7, 10, 0, "", 32);
 		txtWeekTitle.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, RIGHT);
@@ -180,6 +184,7 @@ class StoryMenuState extends MusicBeatState
 		add(txtTracklist);
 		// add(rankText);
 		add(scoreText);
+		add(maniaScoreText);
 		add(txtWeekTitle);
 
 		changeWeek();
@@ -198,9 +203,13 @@ class StoryMenuState extends MusicBeatState
 	{
 		// scoreText.setFormat('VCR OSD Mono', 32);
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, CoolUtil.boundTo(elapsed * 30, 0, 1)));
+		lerpManiaScore = Math.floor(FlxMath.lerp(lerpManiaScore, intendedManiaScore, CoolUtil.boundTo(elapsed * 30, 0, 1)));
+		if(Math.abs(intendedManiaScore - lerpManiaScore) < 10) lerpManiaScore = intendedManiaScore;
 		if(Math.abs(intendedScore - lerpScore) < 10) lerpScore = intendedScore;
 
 		scoreText.text = "WEEK SCORE:" + lerpScore;
+		maniaScoreText.x = scoreText.x + scoreText.fieldWidth + 20;
+		maniaScoreText.text = "o!mania:" + lerpManiaScore + ' (${performancePoints}pp)';
 
 		// FlxG.watch.addQuick('font', scoreText.font);
 
@@ -360,11 +369,15 @@ class StoryMenuState extends MusicBeatState
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
+		intendedManiaScore = FlxMath.roundDecimal(Highscore.getManiaWeekScore(loadedWeeks[curWeek].fileName, curDifficulty), 0);
+		performancePoints = FlxMath.roundDecimal(Highscore.getWeekPerformancePoints(loadedWeeks[curWeek].fileName, curDifficulty), 0);
 		#end
 	}
 
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
+	var lerpManiaScore:Float = 0;
+	var intendedManiaScore:Float = 0;
 
 	function changeWeek(change:Int = 0):Void
 	{
@@ -478,6 +491,8 @@ class StoryMenuState extends MusicBeatState
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
+		intendedManiaScore = FlxMath.roundDecimal(Highscore.getManiaWeekScore(loadedWeeks[curWeek].fileName, curDifficulty), 0);
+		performancePoints = FlxMath.roundDecimal(Highscore.getWeekPerformancePoints(loadedWeeks[curWeek].fileName, curDifficulty), 0);
 		#end
 	}
 }

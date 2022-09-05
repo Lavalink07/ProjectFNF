@@ -38,6 +38,10 @@ class FreeplayState extends MusicBeatState
 	var diffText:FlxText;
 	var lerpScore:Int = 0;
 	var lerpRating:Float = 0;
+	var lerpManiaScore:Float = 0;
+	var lerpManiaRating:Float = 0;
+	var intendedManiaScore:Float = 0;
+	var intendedManiaRating:Float = 0;
 	var intendedScore:Int = 0;
 	var intendedRating:Float = 0;
 
@@ -146,11 +150,11 @@ class FreeplayState extends MusicBeatState
 		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
 
-		scoreBG = new FlxSprite(scoreText.x - 6, 0).makeGraphic(1, 66, 0xFF000000);
+		scoreBG = new FlxSprite(scoreText.x - 6, 0).makeGraphic(1, 132, 0xFF000000);
 		scoreBG.alpha = 0.6;
 		add(scoreBG);
 
-		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
+		diffText = new FlxText(scoreText.x, scoreText.y + 91, 0, "", 24);
 		diffText.font = scoreText.font;
 		add(diffText);
 
@@ -255,6 +259,19 @@ class FreeplayState extends MusicBeatState
 			lerpScore = intendedScore;
 		if (Math.abs(lerpRating - intendedRating) <= 0.01)
 			lerpRating = intendedRating;
+		lerpManiaScore = FlxMath.roundDecimal(FlxMath.lerp(lerpManiaScore, intendedManiaScore, CoolUtil.boundTo(elapsed * 24, 0, 1)), 0);
+		lerpManiaRating = FlxMath.lerp(lerpManiaRating, intendedManiaRating, CoolUtil.boundTo(elapsed * 12, 0, 1));
+		if (Math.abs(lerpManiaRating - intendedManiaRating) <= 0.01)
+			lerpManiaRating = intendedManiaRating;
+
+		var maniaRatingSplit:Array<String> = Std.string(Highscore.floorDecimal(lerpManiaRating * 100, 2)).split('.');
+		if(maniaRatingSplit.length < 2) { //No decimals, add an empty space
+			maniaRatingSplit.push('');
+		}
+		
+		while(maniaRatingSplit[1].length < 2) { //Less than 2 decimals in it, add decimals then
+			maniaRatingSplit[1] += '0';
+		}
 
 		var ratingSplit:Array<String> = Std.string(Highscore.floorDecimal(lerpRating * 100, 2)).split('.');
 		if(ratingSplit.length < 2) { //No decimals, add an empty space
@@ -265,7 +282,9 @@ class FreeplayState extends MusicBeatState
 			ratingSplit[1] += '0';
 		}
 
-		scoreText.text = 'PERSONAL BEST: ' + lerpScore + ' (' + ratingSplit.join('.') + '%)';
+		scoreText.text = 'PERSONAL BEST (${FlxMath.roundDecimal(Highscore.getPerformancePoints(songs[curSelected].songName, curDifficulty), 1)}pp)\n';
+		scoreText.text += 'Vanilla: $lerpScore (${ratingSplit.join('.')}%)\n';
+		scoreText.text += 'o!mania: $lerpManiaScore (${maniaRatingSplit.join('.')}%)\n';
 		positionHighscore();
 
 		var upP = controls.UI_UP_P;
@@ -424,6 +443,8 @@ class FreeplayState extends MusicBeatState
 		#if !switch
 		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
 		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty);
+		intendedManiaScore = Highscore.getManiaScore(songs[curSelected].songName, curDifficulty);
+		intendedManiaRating = Highscore.getManiaRating(songs[curSelected].songName, curDifficulty);
 		#end
 
 		PlayState.storyDifficulty = curDifficulty;
@@ -460,6 +481,8 @@ class FreeplayState extends MusicBeatState
 		#if !switch
 		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
 		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty);
+		intendedManiaScore = Highscore.getManiaScore(songs[curSelected].songName, curDifficulty);
+		intendedManiaRating = Highscore.getManiaRating(songs[curSelected].songName, curDifficulty);
 		#end
 
 		var bullShit:Int = 0;
