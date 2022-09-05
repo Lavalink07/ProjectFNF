@@ -141,6 +141,7 @@ class PlayState extends MusicBeatState
 	public var notes:FlxTypedGroup<Note>;
 	public var unspawnNotes:Array<Note> = [];
 	public var eventNotes:Array<EventNote> = [];
+	public var maniaNoteMultiplier:Float = 0;
 
 	private var strumLine:FlxSprite;
 
@@ -173,6 +174,7 @@ class PlayState extends MusicBeatState
 	public var timeBar:FlxBar;
 
 	public var ratingsData:Array<Rating> = [];
+	public var maxs:Int = 0;
 	public var sicks:Int = 0;
 	public var goods:Int = 0;
 	public var bads:Int = 0;
@@ -250,6 +252,7 @@ class PlayState extends MusicBeatState
 	var foregroundSprites:FlxTypedGroup<BGSprite>;
 
 	public var songScore:Int = 0;
+	public var maniaSongScore:Float = 0;
 	public var songHits:Int = 0;
 	public var songMisses:Int = 0;
 	public var scoreTxt:FlxText;
@@ -258,6 +261,7 @@ class PlayState extends MusicBeatState
 
 	public static var campaignScore:Int = 0;
 	public static var campaignMisses:Int = 0;
+	public static var campaignManiaScore:Float = 0;
 	public static var seenCutscene:Bool = false;
 	public static var deathCounter:Int = 0;
 
@@ -321,24 +325,41 @@ class PlayState extends MusicBeatState
 		];
 
 		//Ratings
-		ratingsData.push(new Rating('sick')); //default rating
+		ratingsData.push(new Rating('max')); //default rating
+
+		var rating:Rating = new Rating('sick');
+		rating.hitValue = 300;
+		rating.hitBonus = 1;
+		ratingsData.push(rating);
 
 		var rating:Rating = new Rating('good');
 		rating.ratingMod = 0.7;
 		rating.score = 200;
 		rating.noteSplash = false;
+		rating.hitValue = 200;
+		rating.hitBonus = 0;
+		rating.hitBonusValue = 16;
+		rating.hitPunishment = 8;
 		ratingsData.push(rating);
 
 		var rating:Rating = new Rating('bad');
 		rating.ratingMod = 0.4;
 		rating.score = 100;
 		rating.noteSplash = false;
+		rating.hitValue = 100;
+		rating.hitBonus = 0;
+		rating.hitBonusValue = 8;
+		rating.hitPunishment = 24;
 		ratingsData.push(rating);
 
 		var rating:Rating = new Rating('shit');
 		rating.ratingMod = 0;
 		rating.score = 50;
 		rating.noteSplash = false;
+		rating.hitValue = 50;
+		rating.hitBonus = 0;
+		rating.hitBonusValue = 4;
+		rating.hitPunishment = 44;
 		ratingsData.push(rating);
 
 		// For the "Just the Two of Us" achievement
@@ -1343,6 +1364,9 @@ class PlayState extends MusicBeatState
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyRelease);
 		}
 
+		for (i in 0...101)
+			bonusSqrtArray.insert(i, Math.sqrt(i)); // Square roots are expensive
+
 		Conductor.safeZoneOffset = (ClientPrefs.safeFrames / 60) * 1000;
 		callOnLuas('onCreatePost', []);
 
@@ -2338,6 +2362,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		var mustHitNoteCount:Int = 0;
 		for (section in noteData)
 		{
 			for (songNotes in section.sectionNotes)
@@ -2405,6 +2430,7 @@ class PlayState extends MusicBeatState
 
 				if (swagNote.mustPress)
 				{
+					if (!swagNote.ignoreNote && !swagNote.isSustainNote) mustHitNoteCount++;
 					swagNote.x += FlxG.width / 2; // general offset
 				}
 				else if(ClientPrefs.middleScroll)
@@ -2422,6 +2448,7 @@ class PlayState extends MusicBeatState
 			}
 			daBeats += 1;
 		}
+		maniaNoteMultiplier = 1 / mustHitNoteCount * 0.5;
 		for (event in songData.events) //Event Notes
 		{
 			for (i in 0...event[1].length)
@@ -3834,6 +3861,7 @@ class PlayState extends MusicBeatState
 			{
 				campaignScore += songScore;
 				campaignMisses += songMisses;
+				campaignManiaScore += maniaSongScore;
 
 				storyPlaylist.remove(storyPlaylist[0]);
 
@@ -3950,6 +3978,8 @@ class PlayState extends MusicBeatState
 
 	public var totalPlayed:Int = 0;
 	public var totalNotesHit:Float = 0.0;
+	public var bonus:Int = 100;
+	private var bonusSqrtArray:Array<Float> = [];
 
 	public var showCombo:Bool = false;
 	public var showComboNum:Bool = true;
@@ -3988,6 +4018,14 @@ class PlayState extends MusicBeatState
 		}
 
 		if(!practiceMode && !cpuControlled) {
+			bonus = Std.int(Math.max(0, Math.min(100, bonus + daRating.hitBonus - daRating.hitPunishment)));
+
+			var firstMultiplier = 1000000 * (practiceMode ? 0.5 : 1) * maniaNoteMultiplier;
+ 
+			var baseScore:Float = firstMultiplier * (daRating.hitValue * 0.003125); // 1 / 320
+			var bonusScore:Float = firstMultiplier * (daRating.hitBonusValue * bonusSqrtArray[bonus] * 0.003125); // 1 / 320
+
+			maniaSongScore += baseScore + bonusScore;
 			songScore += score;
 			if(!note.ratingDisabled)
 			{
@@ -4349,7 +4387,8 @@ class PlayState extends MusicBeatState
 		//trace(daNote.missHealth);
 		songMisses++;
 		vocals.volume = 0;
-		if(!practiceMode) songScore -= 10;
+		if(!practiceMode && ClientPrefs.scoreSystem == 'Vanilla') songScore -= 10;
+		bonus = 0;
 
 		totalPlayed++;
 		RecalculateRating(true);
@@ -4403,7 +4442,8 @@ class PlayState extends MusicBeatState
 			}
 			combo = 0;
 
-			if(!practiceMode) songScore -= 10;
+			if(!practiceMode && ClientPrefs.scoreSystem == 'Vanilla') songScore -= 10;
+			bonus = 0;
 			if(!endingSong) {
 				songMisses++;
 			}
@@ -5042,6 +5082,8 @@ class PlayState extends MusicBeatState
 	public var ratingName:String = '?';
 	public var ratingPercent:Float;
 	public var ratingFC:String;
+	public var maniaRatingPercentV1:Float;
+	public var maniaRatingPercentV2:Float;
 	public function RecalculateRating(badHit:Bool = false) {
 		setOnLuas('score', songScore);
 		setOnLuas('misses', songMisses);
@@ -5063,6 +5105,8 @@ class PlayState extends MusicBeatState
 				ratingPercent = Math.min(1, Math.max(0, totalNotesHit / totalPlayed));
 				//trace((totalNotesHit / totalPlayed) + ', Total: ' + totalPlayed + ', notes hit: ' + totalNotesHit);
 
+				maniaRatingPercentV1 = Math.min(1, Math.max(0, (300 * (maxs + sicks) + 200 * goods + 100 * bads + 50 * shits) / (300 * totalPlayed)));
+				maniaRatingPercentV2 = Math.min(1, Math.max(0, (305 * maxs + 300 * sicks + 200 * goods + 100 * bads + 50 * shits) / (305 * totalPlayed)));
 				// Rating Name
 				if(ratingPercent >= 1)
 				{

@@ -55,6 +55,7 @@ class ClientPrefs {
 
 	public static var comboOffset:Array<Int> = [0, 0, 0, 0];
 	public static var ratingOffset:Int = 0;
+	public static var maxWindow:Int = 15;
 	public static var sickWindow:Int = 45;
 	public static var goodWindow:Int = 90;
 	public static var badWindow:Int = 135;
@@ -66,6 +67,8 @@ class ClientPrefs {
 	public static var stunsBlockInputs:Float = 0;
 	public static var cameraMoveIntensity:Float = 0;
 	public static var missShakeIntensity:Float = 0;
+	public static var scoreSystem:String = 'Vanilla';
+	public static var accuracySystem:String = 'Psych';
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -126,6 +129,7 @@ class ClientPrefs {
 		FlxG.save.data.henchmenDeath = Achievements.henchmenDeath;
 
 		FlxG.save.data.ratingOffset = ratingOffset;
+		FlxG.save.data.maxWindow = maxWindow;
 		FlxG.save.data.sickWindow = sickWindow;
 		FlxG.save.data.goodWindow = goodWindow;
 		FlxG.save.data.badWindow = badWindow;
@@ -141,6 +145,8 @@ class ClientPrefs {
 		FlxG.save.data.stunsBlockInputs = stunsBlockInputs;
 		FlxG.save.data.cameraMoveIntensity = cameraMoveIntensity;
 		FlxG.save.data.missShakeIntensity = missShakeIntensity;
+		FlxG.save.data.scoreSystem = scoreSystem;
+		FlxG.save.data.accuracySystem = accuracySystem;
 	
 		FlxG.save.flush();
 
@@ -229,6 +235,9 @@ class ClientPrefs {
 		if(FlxG.save.data.ratingOffset != null) {
 			ratingOffset = FlxG.save.data.ratingOffset;
 		}
+		if(FlxG.save.data.maxWindow != null) {
+			maxWindow = FlxG.save.data.maxWindow;
+		}
 		if(FlxG.save.data.sickWindow != null) {
 			sickWindow = FlxG.save.data.sickWindow;
 		}
@@ -272,6 +281,12 @@ class ClientPrefs {
 		}
 		if(FlxG.save.data.missShakeIntensity != null) {
 			missShakeIntensity = FlxG.save.data.missShakeIntensity;
+		}
+		if(FlxG.save.data.scoreSystem != null) {
+			scoreSystem = FlxG.save.data.scoreSystem;
+		}
+		if(FlxG.save.data.accuracySystem != null) {
+			accuracySystem = FlxG.save.data.accuracySystem;
 		}
 		
 		// flixel automatically saves your volume!

@@ -164,6 +164,10 @@ class Rating
 	public var ratingMod:Float = 1;
 	public var score:Int = 350;
 	public var noteSplash:Bool = true;
+	public var hitValue:Float = 320; // for osu!mania score
+	public var hitBonusValue:Int = 32;
+	public var hitBonus:Int = 2;
+	public var hitPunishment:Int = 0;
 
 	public function new(name:String)
 	{

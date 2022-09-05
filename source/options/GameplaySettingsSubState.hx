@@ -90,6 +90,22 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.decimals = 1;
 		option.onChange = onChangeHitsoundVolume;
 
+		var option:Option = new Option('Score:',
+			"What score system do you prefer?\nosu!mania uses ScoreV1",
+			'scoreSystem',
+			'string',
+			'Vanilla',
+			['osu!mania', 'Vanilla']);
+		addOption(option);
+
+		var option:Option = new Option('Accuracy:',
+			"What accuracy system do you prefer?\nScoreV1 requires SFC for 100%, ScoreV2 requires MFC for 100%",
+			'accuracySystem',
+			'string',
+			'Psych',
+			['osu!mania (ScoreV2)', 'osu!mania (ScoreV1)', 'Psych']);
+		addOption(option);
+
 		var option:Option = new Option('Rating Offset',
 			'Changes how late/early you have to hit for a "Sick!"\nHigher values mean you have to hit later.',
 			'ratingOffset',
@@ -99,6 +115,17 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.scrollSpeed = 20;
 		option.minValue = -30;
 		option.maxValue = 30;
+		addOption(option);
+
+		var option:Option = new Option('MAX Hit Window',
+			'Changes the amount of time you have\nfor hitting a "MAX" in milliseconds.',
+			'maxWindow',
+			'int',
+			15);
+		option.displayFormat = '%vms';
+		option.scrollSpeed = 5;
+		option.minValue = 5;
+		option.maxValue = 15;
 		addOption(option);
 
 		var option:Option = new Option('Sick! Hit Window',
