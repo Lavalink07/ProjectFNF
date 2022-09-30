@@ -5,9 +5,9 @@ Subject: [PATCH] Add visual options 'Advanced Score Text' and 'Score Text Underl
 
 ---
  source/ClientPrefs.hx               |  10 ++
- source/PlayState.hx                 | 259 ++++++++++++++++++++++++----
- source/options/VisualsUISubState.hx |  19 ++
- 3 files changed, 251 insertions(+), 37 deletions(-)
+ source/PlayState.hx                 | 186 ++++++++++++++++++++++++----
+ source/options/VisualsUISubState.hx |  19 +++
+ 3 files changed, 194 insertions(+), 21 deletions(-)
 
 diff --git a/source/ClientPrefs.hx b/source/ClientPrefs.hx
 index 3368b24..10df0e3 100644
@@ -45,7 +45,7 @@ index 3368b24..10df0e3 100644
  		// flixel automatically saves your volume!
  		if(FlxG.save.data.volume != null)
 diff --git a/source/PlayState.hx b/source/PlayState.hx
-index 8c11f70..526507b 100644
+index 8c11f70..d3e8740 100644
 --- a/source/PlayState.hx
 +++ b/source/PlayState.hx
 @@ -75,17 +75,33 @@ class PlayState extends MusicBeatState
@@ -251,7 +251,7 @@ index 8c11f70..526507b 100644
  
  		if(ClientPrefs.scoreZoom && !miss && !cpuControlled)
  		{
-@@ -2942,6 +3064,15 @@ class PlayState extends MusicBeatState
+@@ -2942,6 +3060,15 @@ class PlayState extends MusicBeatState
  		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
  		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
  
@@ -267,7 +267,7 @@ index 8c11f70..526507b 100644
  		var mult:Float = FlxMath.lerp(1, iconP1.scale.x, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1));
  		iconP1.scale.set(mult, mult);
  		iconP1.updateHitbox();
-@@ -2958,12 +3089,12 @@ class PlayState extends MusicBeatState
+@@ -2958,12 +3085,12 @@ class PlayState extends MusicBeatState
  		if (health > 2)
  			health = 2;
  
@@ -282,7 +282,7 @@ index 8c11f70..526507b 100644
  			iconP2.animation.curAnim.curFrame = 1;
  		else
  			iconP2.animation.curAnim.curFrame = 0;
-@@ -3056,6 +3187,14 @@ class PlayState extends MusicBeatState
+@@ -3056,6 +3183,14 @@ class PlayState extends MusicBeatState
  				unspawnNotes.splice(index, 1);
  			}
  		}
@@ -297,7 +297,7 @@ index 8c11f70..526507b 100644
  
  		if (generatedMusic)
  		{
-@@ -3137,6 +3276,7 @@ class PlayState extends MusicBeatState
+@@ -3137,6 +3272,7 @@ class PlayState extends MusicBeatState
  					if(daNote.isSustainNote) {
  						if(daNote.canBeHit) {
  							goodNoteHit(daNote);
@@ -305,7 +305,7 @@ index 8c11f70..526507b 100644
  						}
  					} else if(daNote.strumTime <= Conductor.songPosition || (daNote.isSustainNote && daNote.canBeHit && daNote.mustPress)) {
  						goodNoteHit(daNote);
-@@ -3842,10 +3982,17 @@ class PlayState extends MusicBeatState
+@@ -3842,12 +3978,19 @@ class PlayState extends MusicBeatState
  
  		var ret:Dynamic = callOnLuas('onEndSong', [], false);
  		if(ret != FunkinLua.Function_Stop && !transitioning) {
@@ -328,7 +328,7 @@ index 8c11f70..526507b 100644
  				#end
  			}
  
-@@ -3862,6 +3978,7 @@ class PlayState extends MusicBeatState
+@@ -3862,6 +4005,7 @@ class PlayState extends MusicBeatState
  				campaignScore += songScore;
  				campaignMisses += songMisses;
  				campaignManiaScore += maniaSongScore;
@@ -336,7 +336,7 @@ index 8c11f70..526507b 100644
  
  				storyPlaylist.remove(storyPlaylist[0]);
  
-@@ -3877,7 +4025,7 @@ class PlayState extends MusicBeatState
+@@ -3877,12 +4021,12 @@ class PlayState extends MusicBeatState
  					MusicBeatState.switchState(new StoryMenuState());
  
  					// if ()
