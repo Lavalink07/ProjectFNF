@@ -22,10 +22,12 @@ Follow the [Friday Night Funkin' source code compilation tutorial](https://githu
 After this you will need to install LuaJIT (run `haxelib install linc_luajit` in a Command Prompt/Terminal)
 _____________________________________
 # Credits:
-* @l1ttleO - Main developer of ProjectFNF 2.0
-* @MagnusStrom - Original maintainer of ProjectFNF 1.0
-* @aflacc - Original author of ProjectFNF
-* @tr1zn - Beta testing
+* [@l1ttleO](https://github.com/l1ttleO) - Main developer of ProjectFNF 2.0
+* [@MagnusStrom](https://github.com/MagnusStrom) - Original maintainer of ProjectFNF 1.0
+* [@aflacc](https://github.com/aflacc) - Original author of ProjectFNF
+* [@tr1zn](https://github.com/Tr1zn) - Beta testing
+
+* [Hydra](https://www.youtube.com/channel/UCEnQefrHAncXQtU4f5jloCA) - [Gettin' Freaky (Main Menu theme) remix](https://youtu.be/26jLVUkV5ew)
 
 ## Psych Engine Credits and Special Thanks:
 * Shadow Mario - Programmer
