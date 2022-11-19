@@ -2,13 +2,16 @@
 
 # Features
 
-* [All Psych Engine features](https://github.com/ShadowMario/FNF-PsychEngine/tree/0.6.2#features)
+* [All Psych Engine features](https://github.com/ShadowMario/FNF-PsychEngine/tree/0.6.3#features)
 * New gameplay options (moving camera on note hit, camera shake on miss, new score bar)
 * New modifiers (opponent notes doing damage, misses decreasing max health, karma system)
 * Quality of Life options and improvements (ability to disable miss anims and sounds, strum line underlay, set custom camera zoom)
 * 'Max Optimization' graphics option to achieve maximum framerate
 
-# Installation:
+## Discord server
+**https://discord.gg/BUgn9dGgB2**
+
+## Installation:
 
 Go [here](https://github.com/l1ttleO/ProjectFNF/releases/latest) and download the appropriate version for your OS
 
@@ -17,9 +20,6 @@ Go [here](https://github.com/l1ttleO/ProjectFNF/releases/latest) and download th
 
 Follow the [Friday Night Funkin' source code compilation tutorial](https://github.com/ninjamuffin99/Funkin#build-instructions)
 After this you will need to install LuaJIT (run `haxelib install linc_luajit` in a Command Prompt/Terminal)
-
-# Discord server
-**https://discord.gg/BUgn9dGgB2**
 _____________________________________
 # Credits:
 * @l1ttleO - Main developer of ProjectFNF 2.0
