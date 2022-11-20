@@ -3,6 +3,11 @@ package;
 #if desktop
 import Discord.DiscordClient;
 #end
+#if MODS_ALLOWED
+import sys.FileSystem;
+#end
+import flixel.input.gamepad.FlxGamepad;
+import flixel.group.FlxGroup;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -20,16 +25,20 @@ import lime.app.Application;
 import Achievements;
 import editors.MasterEditorMenu;
 import flixel.input.keyboard.FlxKey;
+import openfl.Assets;
 
 using StringTools;
 
 class MainMenuState extends MusicBeatState
 {
+	public static var projectFnfVersion:String = '2.6-ALPHA';
 	public static var psychEngineVersion:String = '0.6.3'; //This is also used for Discord RPC
 	public static var curSelected:Int = 0;
+	public static var activatedLogo:Bool = false;
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
-	private var camGame:FlxCamera;
+	private var camMain:FlxCamera;
+	private var camCoolText:FlxCamera;
 	private var camAchievement:FlxCamera;
 	
 	var optionShit:Array<String> = [
@@ -47,6 +56,14 @@ class MainMenuState extends MusicBeatState
 	var camFollowPos:FlxObject;
 	var debugKeys:Array<FlxKey>;
 
+	var logo:FlxSprite;
+	var logoBl:FlxSprite;
+	var swagShader:ColorSwap;
+	var credGroup:FlxGroup = new FlxGroup();
+	var ngSpr:FlxSprite;
+	var curWacky:Array<String> = [];
+	var initialized:Bool = false;
+
 	override function create()
 	{
 		#if MODS_ALLOWED
@@ -54,24 +71,63 @@ class MainMenuState extends MusicBeatState
 		#end
 		WeekData.loadTheFirstEnabledMod();
 
+		FlxG.game.focusLostFramerate = 60;
+		FlxG.sound.muteKeys = [FlxKey.ZERO];
+		FlxG.sound.volumeDownKeys = [FlxKey.NUMPADMINUS, FlxKey.MINUS];
+		FlxG.sound.volumeUpKeys = [FlxKey.NUMPADPLUS, FlxKey.PLUS];
+		FlxG.keys.preventDefaultKeys = [TAB];
+
+		PlayerSettings.init();
+		FlxG.save.bind('funkin', 'ninjamuffin99');
+		ClientPrefs.loadPrefs();
+		Highscore.load();
+		if (initialized) {
+			if (FlxG.save.data != null && FlxG.save.data.fullscreen)
+				FlxG.fullscreen = FlxG.save.data.fullscreen;
+			persistentUpdate = true;
+			persistentDraw = true;
+		} else if (FlxG.sound.music == null)
+			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+
+		if (FlxG.save.data.weekCompleted != null)
+			StoryMenuState.weekCompleted = FlxG.save.data.weekCompleted;
+		FlxG.mouse.visible = false;
+
+		if(FlxG.save.data.flashing == null && !FlashingState.leftState) {
+			FlxTransitionableState.skipNextTransIn = true;
+			FlxTransitionableState.skipNextTransOut = true;
+			MusicBeatState.switchState(new FlashingState());
+		} else {
+			#if desktop
+			if (!DiscordClient.isInitialized) {
+				DiscordClient.initialize();
+				Application.current.onExit.add (function (exitCode) {
+					DiscordClient.shutdown();
+				});
+			}
+			#end
+		}
+
 		#if desktop
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 		debugKeys = ClientPrefs.copyKey(ClientPrefs.keyBinds.get('debug_1'));
 
-		camGame = new FlxCamera();
+		camMain = new FlxCamera();
+		camCoolText = new FlxCamera();
+		camCoolText.bgColor.alpha = 0;
 		camAchievement = new FlxCamera();
 		camAchievement.bgColor.alpha = 0;
 
-		FlxG.cameras.reset(camGame);
+		FlxG.cameras.reset(camMain);
+		FlxG.cameras.add(camCoolText, false);
 		FlxG.cameras.add(camAchievement, false);
-		FlxG.cameras.setDefaultDrawTarget(camGame, true);
+		FlxG.cameras.setDefaultDrawTarget(camMain, true);
+		if (!sawCoolText) camMain.visible = false;
 
 		transIn = FlxTransitionableState.defaultTransIn;
 		transOut = FlxTransitionableState.defaultTransOut;
-
-		persistentUpdate = persistentDraw = true;
 
 		var yScroll:Float = Math.max(0.25 - (0.05 * (optionShit.length - 4)), 0.1);
 		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
@@ -107,6 +163,7 @@ class MainMenuState extends MusicBeatState
 			scale = 6 / optionShit.length;
 		}*/
 
+		var scr:Float = 0;
 		for (i in 0...optionShit.length)
 		{
 			var offset:Float = 108 - (Math.max(optionShit.length, 4) - 4) * 80;
@@ -118,9 +175,9 @@ class MainMenuState extends MusicBeatState
 			menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
 			menuItem.animation.play('idle');
 			menuItem.ID = i;
-			menuItem.screenCenter(X);
+			menuItem.x = activatedLogo ? (FlxG.width - menuItem.width) / 6 : -FlxG.width;
 			menuItems.add(menuItem);
-			var scr:Float = (optionShit.length - 4) * 0.135;
+			scr = (optionShit.length - 4) * 0.135;
 			if(optionShit.length < 6) scr = 0;
 			menuItem.scrollFactor.set(0, scr);
 			menuItem.antialiasing = ClientPrefs.globalAntialiasing;
@@ -130,18 +187,59 @@ class MainMenuState extends MusicBeatState
 
 		FlxG.camera.follow(camFollowPos, null, 1);
 
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 12);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 64, FlxG.width - 24, "ProjectFNF v" + projectFnfVersion, 12);
 		versionShit.scrollFactor.set();
-		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 44, FlxG.width - 24, "Psych Engine v" + psychEngineVersion, 12);
 		versionShit.scrollFactor.set();
-		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 24, FlxG.width - 24, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
+		versionShit.scrollFactor.set();
+		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		versionShit.wordWrap = false;
+		add(versionShit);
+
+		swagShader = new ColorSwap();
+		if (FileSystem.exists(Paths.modsImages('logoBumpin')) && !FileSystem.exists(Paths.modsImages('titlelogo'))) {
+			logoBl = new FlxSprite(FlxG.width * (4 / 7), 0);
+			logoBl.frames = Paths.getSparrowAtlas('logoBumpin');
+
+			logoBl.antialiasing = ClientPrefs.globalAntialiasing;
+			logoBl.animation.addByPrefix('bump', 'logo bumpin', 24, false);
+			logoBl.animation.play('bump');
+			logoBl.updateHitbox();
+			logoBl.shader = swagShader.shader;
+			logoBl.scrollFactor.set(0, scr * 0.75);
+			add(logoBl);
+		} else {
+			logo = new FlxSprite(FlxG.width * (4 / 7), 0).loadGraphic(Paths.image('titlelogo'));
+			logo.antialiasing = ClientPrefs.globalAntialiasing;
+			logo.shader = swagShader.shader;
+			logo.scrollFactor.set(0, scr * 0.75);
+			add(logo);
+		}
 
 		// NG.core.calls.event.logEvent('swag').send();
 
-		changeItem();
+		if (!activatedLogo) {
+			var logo = logoBl != null ? logoBl : logo;
+			logo.x = (FlxG.width - logo.width) / 2;
+			camFollow.setPosition(logo.x, logo.y);
+		} else changeItem();
+
+		ngSpr = new FlxSprite(0, FlxG.height * 0.52).loadGraphic(Paths.image('newgrounds_logo'));
+		ngSpr.visible = false;
+		ngSpr.setGraphicSize(Std.int(ngSpr.width * 0.8));
+		ngSpr.updateHitbox();
+		ngSpr.screenCenter(X);
+		ngSpr.antialiasing = ClientPrefs.globalAntialiasing;
+		ngSpr.cameras = [camCoolText];
+		add(ngSpr);
+
+		curWacky = FlxG.random.getObject(getIntroTextShit());
+		add(credGroup);
 
 		#if ACHIEVEMENTS_ALLOWED
 		Achievements.loadAchievements();
@@ -156,6 +254,7 @@ class MainMenuState extends MusicBeatState
 		}
 		#end
 
+		initialized = true;
 		super.create();
 	}
 
@@ -172,16 +271,19 @@ class MainMenuState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
-		if (FlxG.sound.music.volume < 0.8)
+		if (FlxG.sound.music != null)
 		{
-			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
-			if(FreeplayState.vocals != null) FreeplayState.vocals.volume += 0.5 * elapsed;
+			if (FlxG.sound.music.volume < 0.8) {
+				FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
+				if(FreeplayState.vocals != null) FreeplayState.vocals.volume += 0.5 * elapsed;
+			}
+			Conductor.songPosition = FlxG.sound.music.time;
 		}
 
 		var lerpVal:Float = CoolUtil.boundTo(elapsed * 7.5, 0, 1);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
-		if (!selectedSomethin)
+		if (!selectedSomethin && activatedLogo && sawCoolText)
 		{
 			if (controls.UI_UP_P)
 			{
@@ -197,9 +299,15 @@ class MainMenuState extends MusicBeatState
 
 			if (controls.BACK)
 			{
-				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
-				MusicBeatState.switchState(new TitleState());
+				activatedLogo = false;
+				var logo:FlxSprite = logoBl != null ? logoBl : logo;
+				FlxTween.tween(logo, {x: (FlxG.width - logo.width) / 2}, 0.75, {ease: FlxEase.expoInOut});
+				camFollow.setPosition(logo.x, logo.y);
+				menuItems.forEach(function(spr:FlxSprite) {
+					FlxTween.tween(spr, {x: -FlxG.width}, 0.75, {ease: FlxEase.expoInOut});
+				});
+				//ease: FlxEase.expoInOut});
 			}
 
 			if (controls.ACCEPT)
@@ -264,12 +372,40 @@ class MainMenuState extends MusicBeatState
 			#end
 		}
 
-		super.update(elapsed);
+		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT;
 
-		menuItems.forEach(function(spr:FlxSprite)
+		#if mobile
+		for (touch in FlxG.touches.list) pressedEnter = pressedEnter || touch.justPressed;
+		#end
+
+		var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
+		if (gamepad != null) {
+			pressedEnter = pressedEnter || gamepad.justPressed.START #if switch || gamepad.justPressed.B #end;
+		}
+		if (pressedEnter) {
+			if (!sawCoolText) {
+				sickBeats = 16;
+				beatHit();
+			}
+			else {
+				activatedLogo = true;
+				changeItem();
+				var logo:FlxSprite = logoBl != null ? logoBl : logo;
+				FlxTween.tween(logo, {x: FlxG.width * (4 / 7)}, 0.75, {ease: FlxEase.expoInOut});
+				menuItems.forEach(function(spr:FlxSprite) {
+					FlxTween.tween(spr, {x: (FlxG.width - spr.width) / 6}, 0.75, {ease: FlxEase.expoInOut});
+				});
+				FlxG.sound.play(Paths.sound('confirmMenu'));
+			}
+		}
+
+		if(swagShader != null)
 		{
-			spr.screenCenter(X);
-		});
+			if(controls.UI_LEFT) swagShader.hue -= elapsed * 0.1;
+			if(controls.UI_RIGHT) swagShader.hue += elapsed * 0.1;
+		}
+
+		super.update(elapsed);
 	}
 
 	function changeItem(huh:Int = 0)
@@ -297,5 +433,146 @@ class MainMenuState extends MusicBeatState
 				spr.centerOffsets();
 			}
 		});
+	}
+
+	private var sickBeats:Int = 0;
+	private static var sawCoolText:Bool = false;
+	override function beatHit()
+	{
+		super.beatHit();
+
+		if (logoBl != null)
+			logoBl.animation.play('bump', true);
+		if (logo != null) {
+			logo.scale.set(1.05, 1.05);
+			FlxTween.tween(logo, {'scale.x': 0.95, 'scale.y': 0.95}, 0.1, { ease: FlxEase.bounceIn });
+		}
+
+		if(initialized && !sawCoolText) {
+			sickBeats++;
+			switch (sickBeats)
+			{
+				case 1:
+					//FlxG.sound.music.stop();
+					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+					FlxG.sound.music.fadeIn(4, 0, 0.7);
+				case 2:
+					#if PROJECTFNF_WATERMARKS
+					createCoolText(['ProjectFNF by'], 15);
+					#elseif PSYCH_WATERMARKS
+					createCoolText(['Psych Engine by'], 15);
+					#else
+					createCoolText(['ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er']);
+					#end
+				// credTextShit.visible = true;
+				case 4:
+					#if PROJECTFNF_WATERMARKS
+					addMoreText('l1ttleO', 15);
+					addMoreText('BeastlyGhost', 15);
+					addMoreText('aflac', 15);
+					#elseif PSYCH_WATERMARKS
+					addMoreText('Shadow Mario', 15);
+					addMoreText('RiverOaken', 15);
+					addMoreText('shubs', 15);
+					#else
+					addMoreText('present');
+					#end
+				// credTextShit.text += '\npresent...';
+				// credTextShit.addText();
+				case 5:
+					deleteCoolText();
+				// credTextShit.visible = false;
+				// credTextShit.text = 'In association \nwith';
+				// credTextShit.screenCenter();
+				case 6:
+					#if (PROJECTFNF_WATERMARKS || PSYCH_WATERMARKS)
+					createCoolText(['Not associated', 'with'], -40);
+					#else
+					createCoolText(['In association', 'with'], -40);
+					#end
+				case 8:
+					addMoreText('newgrounds', -40);
+					ngSpr.visible = true;
+				// credTextShit.text += '\nNewgrounds';
+				case 9:
+					deleteCoolText();
+					ngSpr.visible = false;
+				// credTextShit.visible = false;
+
+				// credTextShit.text = 'Shoutouts Tom Fulp';
+				// credTextShit.screenCenter();
+				case 10:
+					createCoolText([curWacky[0]]);
+				// credTextShit.visible = true;
+				case 12:
+					addMoreText(curWacky[1]);
+				// credTextShit.text += '\nlmao';
+				case 13:
+					deleteCoolText();
+				// credTextShit.visible = false;
+				// credTextShit.text = "Friday";
+				// credTextShit.screenCenter();
+				case 14:
+					addMoreText('Friday');
+				// credTextShit.visible = true;
+				case 15:
+					addMoreText('Night');
+				// credTextShit.text += '\nNight';
+				case 16:
+					addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
+
+				case 17:
+					remove(ngSpr);
+					remove(credGroup);
+					camMain.visible = true;
+					camMain.flash(FlxColor.WHITE, 3);
+					sawCoolText = true;
+			}
+		}
+	}
+
+	function createCoolText(textArray:Array<String>, ?offset:Float = 0)
+	{
+		for (i in 0...textArray.length)
+		{
+			var money:Alphabet = new Alphabet(0, 0, textArray[i], true);
+			money.screenCenter(X);
+			money.y += (i * 60) + 200 + offset;
+			money.cameras = [camCoolText];
+			if(credGroup != null)
+				credGroup.add(money);
+		}
+	}
+
+	function addMoreText(text:String, ?offset:Float = 0)
+	{
+		if(credGroup != null) {
+			var coolText:Alphabet = new Alphabet(0, 0, text, true);
+			coolText.screenCenter(X);
+			coolText.y += (credGroup.length * 60) + 200 + offset;
+			coolText.cameras = [camCoolText];
+			credGroup.add(coolText);
+		}
+	}
+
+	function deleteCoolText()
+	{
+		while (credGroup.members.length > 0)
+			credGroup.remove(credGroup.members[0], true);
+	}
+
+	function getIntroTextShit():Array<Array<String>>
+	{
+		var fullText:String = Assets.getText(Paths.txt('introText'));
+
+		var firstArray:Array<String> = fullText.split('\n');
+		var swagGoodArray:Array<Array<String>> = [];
+
+		for (i in firstArray)
+		{
+			swagGoodArray.push(i.split('--'));
+		}
+
+		return swagGoodArray;
 	}
 }
