@@ -1163,7 +1163,7 @@ class PlayState extends MusicBeatState
 			botplayTxt.y = timeBarBG.y - 78;
 		}
 
-		var versionTxt:FlxText = new FlxText(4, FlxG.height - 24, 0, '${SONG.song} - ${CoolUtil.difficultyString()} | ProjectFNF v${MainMenuState.projectFnfVersion}${TitleState.mustUpdate ? " [OUTDATED]" : ""}', 12);
+		var versionTxt:FlxText = new FlxText(4, FlxG.height - 24, 0, '${SONG.song} - ${CoolUtil.difficultyString()} | ProjectFNF v${MainMenuState.projectFnfVersion}${MainMenuState.mustUpdate ? " [OUTDATED]" : ""}', 12);
 		versionTxt.scrollFactor.set();
 		versionTxt.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionTxt);

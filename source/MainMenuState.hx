@@ -35,6 +35,12 @@ class MainMenuState extends MusicBeatState
 	public static var psychEngineVersion:String = '0.6.3'; //This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var activatedLogo:Bool = false;
+	public static var mustUpdate:Bool = false; // TODO: outdated notifications
+	public static var initialized:Bool = false;
+
+	public static var muteKeys = [FlxKey.ZERO];
+	public static var volumeDownKeys = [FlxKey.NUMPADMINUS, FlxKey.MINUS];
+	public static var volumeUpKeys = [FlxKey.NUMPADPLUS, FlxKey.PLUS];
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	private var camMain:FlxCamera;
@@ -62,7 +68,7 @@ class MainMenuState extends MusicBeatState
 	var credGroup:FlxGroup = new FlxGroup();
 	var ngSpr:FlxSprite;
 	var curWacky:Array<String> = [];
-	var initialized:Bool = false;
+	
 
 	override function create()
 	{
@@ -72,22 +78,24 @@ class MainMenuState extends MusicBeatState
 		WeekData.loadTheFirstEnabledMod();
 
 		FlxG.game.focusLostFramerate = 60;
-		FlxG.sound.muteKeys = [FlxKey.ZERO];
-		FlxG.sound.volumeDownKeys = [FlxKey.NUMPADMINUS, FlxKey.MINUS];
-		FlxG.sound.volumeUpKeys = [FlxKey.NUMPADPLUS, FlxKey.PLUS];
+		FlxG.sound.muteKeys = muteKeys;
+		FlxG.sound.volumeDownKeys = volumeDownKeys;
+		FlxG.sound.volumeUpKeys = volumeUpKeys;
 		FlxG.keys.preventDefaultKeys = [TAB];
 
 		PlayerSettings.init();
 		FlxG.save.bind('funkin', 'ninjamuffin99');
 		ClientPrefs.loadPrefs();
 		Highscore.load();
-		if (initialized) {
+		if (!initialized) {
 			if (FlxG.save.data != null && FlxG.save.data.fullscreen)
 				FlxG.fullscreen = FlxG.save.data.fullscreen;
 			persistentUpdate = true;
 			persistentDraw = true;
-		} else if (FlxG.sound.music == null)
+		} 
+		if (FlxG.sound.music == null)
 			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+		Conductor.changeBPM(102);
 
 		if (FlxG.save.data.weekCompleted != null)
 			StoryMenuState.weekCompleted = FlxG.save.data.weekCompleted;
@@ -436,7 +444,7 @@ class MainMenuState extends MusicBeatState
 	}
 
 	private var sickBeats:Int = 0;
-	private static var sawCoolText:Bool = false;
+	public static var sawCoolText:Bool = false;
 	override function beatHit()
 	{
 		super.beatHit();
