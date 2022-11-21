@@ -6,6 +6,7 @@ import Discord.DiscordClient;
 #if MODS_ALLOWED
 import sys.FileSystem;
 #end
+import flixel.FlxSubState;
 import flixel.input.gamepad.FlxGamepad;
 import flixel.group.FlxGroup;
 import flixel.FlxG;
@@ -37,6 +38,7 @@ class MainMenuState extends MusicBeatState
 	public static var activatedLogo:Bool = false;
 	public static var mustUpdate:Bool = false; // TODO: outdated notifications
 	public static var initialized:Bool = false;
+	public static var instance:MainMenuState = null;
 
 	public static var muteKeys = [FlxKey.ZERO];
 	public static var volumeDownKeys = [FlxKey.NUMPADMINUS, FlxKey.MINUS];
@@ -44,7 +46,7 @@ class MainMenuState extends MusicBeatState
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	private var camMain:FlxCamera;
-	private var camCoolText:FlxCamera;
+	public var camOther:FlxCamera;
 	private var camAchievement:FlxCamera;
 	
 	var optionShit:Array<String> = [
@@ -57,6 +59,7 @@ class MainMenuState extends MusicBeatState
 		'options'
 	];
 
+	public var bg:FlxSprite;
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
 	var camFollowPos:FlxObject;
@@ -72,6 +75,7 @@ class MainMenuState extends MusicBeatState
 
 	override function create()
 	{
+		instance = this;
 		#if MODS_ALLOWED
 		Paths.pushGlobalMods();
 		#end
@@ -118,18 +122,18 @@ class MainMenuState extends MusicBeatState
 
 		#if desktop
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence("Main Menu", null);
 		#end
 		debugKeys = ClientPrefs.copyKey(ClientPrefs.keyBinds.get('debug_1'));
 
 		camMain = new FlxCamera();
-		camCoolText = new FlxCamera();
-		camCoolText.bgColor.alpha = 0;
+		camOther = new FlxCamera();
+		camOther.bgColor.alpha = 0;
 		camAchievement = new FlxCamera();
 		camAchievement.bgColor.alpha = 0;
 
 		FlxG.cameras.reset(camMain);
-		FlxG.cameras.add(camCoolText, false);
+		FlxG.cameras.add(camOther, false);
 		FlxG.cameras.add(camAchievement, false);
 		FlxG.cameras.setDefaultDrawTarget(camMain, true);
 		if (!sawCoolText) camMain.visible = false;
@@ -138,7 +142,7 @@ class MainMenuState extends MusicBeatState
 		transOut = FlxTransitionableState.defaultTransOut;
 
 		var yScroll:Float = Math.max(0.25 - (0.05 * (optionShit.length - 4)), 0.1);
-		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
+		bg = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
 		bg.scrollFactor.set(0, yScroll);
 		bg.setGraphicSize(Std.int(bg.width * 1.175));
 		bg.updateHitbox();
@@ -193,17 +197,15 @@ class MainMenuState extends MusicBeatState
 			menuItem.updateHitbox();
 		}
 
-		FlxG.camera.follow(camFollowPos, null, 1);
-
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 64, FlxG.width - 24, "ProjectFNF v" + projectFnfVersion, 12);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 90, FlxG.width - 24, "ProjectFNF v" + projectFnfVersion, 12);
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 44, FlxG.width - 24, "Psych Engine v" + psychEngineVersion, 12);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 70, FlxG.width - 24, "Psych Engine v" + psychEngineVersion, 12);
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 24, FlxG.width - 24, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
+		var versionShit:FlxText = new FlxText(12, FlxG.height - 50, FlxG.width - 24, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		versionShit.wordWrap = false;
@@ -243,7 +245,7 @@ class MainMenuState extends MusicBeatState
 		ngSpr.updateHitbox();
 		ngSpr.screenCenter(X);
 		ngSpr.antialiasing = ClientPrefs.globalAntialiasing;
-		ngSpr.cameras = [camCoolText];
+		ngSpr.cameras = [camOther];
 		add(ngSpr);
 
 		curWacky = FlxG.random.getObject(getIntroTextShit());
@@ -276,6 +278,7 @@ class MainMenuState extends MusicBeatState
 	#end
 
 	var selectedSomethin:Bool = false;
+	var somewhereElse:Bool = false;
 
 	override function update(elapsed:Float)
 	{
@@ -283,10 +286,21 @@ class MainMenuState extends MusicBeatState
 		{
 			if (FlxG.sound.music.volume < 0.8) {
 				FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
-				if(FreeplayState.vocals != null) FreeplayState.vocals.volume += 0.5 * elapsed;
+				if(FreeplaySubstate.vocals != null) FreeplaySubstate.vocals.volume += 0.5 * elapsed;
 			}
 			Conductor.songPosition = FlxG.sound.music.time;
 		}
+		if(swagShader != null)
+		{
+			if(controls.UI_LEFT) swagShader.hue -= elapsed * 0.1;
+			if(controls.UI_RIGHT) swagShader.hue += elapsed * 0.1;
+		}
+
+		if (subState != null) {
+			super.update(elapsed);
+			return;
+		}
+		camMain.follow(camFollowPos, null, 1);
 
 		var lerpVal:Float = CoolUtil.boundTo(elapsed * 7.5, 0, 1);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
@@ -315,7 +329,6 @@ class MainMenuState extends MusicBeatState
 				menuItems.forEach(function(spr:FlxSprite) {
 					FlxTween.tween(spr, {x: -FlxG.width}, 0.75, {ease: FlxEase.expoInOut});
 				});
-				//ease: FlxEase.expoInOut});
 			}
 
 			if (controls.ACCEPT)
@@ -345,7 +358,7 @@ class MainMenuState extends MusicBeatState
 						}
 						else
 						{
-							FlxFlicker.flicker(spr, 1, 0.06, false, false, function(flick:FlxFlicker)
+							FlxFlicker.flicker(spr, 1, 0.06, true, false, function(flick:FlxFlicker)
 							{
 								var daChoice:String = optionShit[curSelected];
 
@@ -354,7 +367,8 @@ class MainMenuState extends MusicBeatState
 									case 'story_mode':
 										MusicBeatState.switchState(new StoryMenuState());
 									case 'freeplay':
-										MusicBeatState.switchState(new FreeplayState());
+										somewhereElse = true;
+										openSubState(new FreeplaySubstate());
 									#if MODS_ALLOWED
 									case 'mods':
 										MusicBeatState.switchState(new ModsMenuState());
@@ -366,7 +380,9 @@ class MainMenuState extends MusicBeatState
 									case 'options':
 										LoadingState.loadAndSwitchState(new options.OptionsState());
 								}
+								spr.kill();
 							});
+
 						}
 					});
 				}
@@ -405,12 +421,6 @@ class MainMenuState extends MusicBeatState
 				});
 				FlxG.sound.play(Paths.sound('confirmMenu'));
 			}
-		}
-
-		if(swagShader != null)
-		{
-			if(controls.UI_LEFT) swagShader.hue -= elapsed * 0.1;
-			if(controls.UI_RIGHT) swagShader.hue += elapsed * 0.1;
 		}
 
 		super.update(elapsed);
@@ -453,7 +463,7 @@ class MainMenuState extends MusicBeatState
 			logoBl.animation.play('bump', true);
 		if (logo != null) {
 			logo.scale.set(1.05, 1.05);
-			FlxTween.tween(logo, {'scale.x': 0.95, 'scale.y': 0.95}, 0.1, { ease: FlxEase.bounceIn });
+			FlxTween.tween(logo, {'scale.x': 0.95, 'scale.y': 0.95}, 0.1, { ease: FlxEase.bounceInOut });
 		}
 
 		if(initialized && !sawCoolText) {
@@ -539,6 +549,12 @@ class MainMenuState extends MusicBeatState
 		}
 	}
 
+	override function sectionHit() {
+		super.sectionHit();
+		if (PlayState.SONG != null && PlayState.SONG.notes[curSection] != null && PlayState.SONG.notes[curSection].changeBPM)
+			Conductor.changeBPM(PlayState.SONG.notes[curSection].bpm);
+	}
+
 	function createCoolText(textArray:Array<String>, ?offset:Float = 0)
 	{
 		for (i in 0...textArray.length)
@@ -546,7 +562,7 @@ class MainMenuState extends MusicBeatState
 			var money:Alphabet = new Alphabet(0, 0, textArray[i], true);
 			money.screenCenter(X);
 			money.y += (i * 60) + 200 + offset;
-			money.cameras = [camCoolText];
+			money.cameras = [camOther];
 			if(credGroup != null)
 				credGroup.add(money);
 		}
@@ -558,7 +574,7 @@ class MainMenuState extends MusicBeatState
 			var coolText:Alphabet = new Alphabet(0, 0, text, true);
 			coolText.screenCenter(X);
 			coolText.y += (credGroup.length * 60) + 200 + offset;
-			coolText.cameras = [camCoolText];
+			coolText.cameras = [camOther];
 			credGroup.add(coolText);
 		}
 	}
@@ -582,5 +598,17 @@ class MainMenuState extends MusicBeatState
 		}
 
 		return swagGoodArray;
+	}
+
+	override function closeSubState() {
+		if (somewhereElse)
+			changeItem();
+		selectedSomethin = somewhereElse = false;
+		menuItems.forEach(function(spr:FlxSprite) {
+			spr.revive();
+			FlxTween.tween(spr, {alpha: 1}, 0.4, {
+				ease: FlxEase.quadOut});
+		});
+		super.closeSubState();
 	}
 }
