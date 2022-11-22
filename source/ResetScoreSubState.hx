@@ -2,6 +2,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
 import flixel.util.FlxColor;
+import flixel.FlxBasic;
 
 using StringTools;
 
@@ -19,7 +20,7 @@ class ResetScoreSubState extends MusicBeatSubstate
 	var week:Int;
 
 	// Week -1 = Freeplay
-	public function new(song:String, difficulty:Int, character:String, week:Int = -1)
+	public function new(song:String, difficulty:Int, character:String, week:Int = -1, ?fromFreeplay:Bool = false)
 	{
 		this.song = song;
 		this.difficulty = difficulty;
@@ -69,6 +70,7 @@ class ResetScoreSubState extends MusicBeatSubstate
 		noText.x += 200;
 		add(noText);
 		updateOptions();
+		if (fromFreeplay) this.forEach(function (spr:FlxBasic) { spr.cameras = [MainMenuState.instance.camOther]; });
 	}
 
 	override function update(elapsed:Float)

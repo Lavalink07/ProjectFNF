@@ -6,6 +6,7 @@ import Discord.DiscordClient;
 import flash.text.TextField;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.FlxBasic;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
@@ -160,6 +161,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 		changeSelection();
 		reloadCheckboxes();
+		this.forEach(function (spr:FlxBasic) { spr.cameras = [MainMenuState.instance.camOther]; });
 	}
 
 	var nextAccept:Int = 5;
@@ -175,8 +177,12 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		{
 			changeSelection(1);
 		}
+		if(FlxG.mouse.wheel != 0 && !FlxG.keys.pressed.SHIFT)
+		{
+			changeSelection(-FlxG.mouse.wheel);
+		}
 
-		if (controls.BACK) {
+		if (controls.BACK || FlxG.mouse.justPressedRight) {
 			close();
 			ClientPrefs.saveSettings();
 			FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -192,7 +198,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 			if(usesCheckbox)
 			{
-				if(controls.ACCEPT)
+				if(controls.ACCEPT || FlxG.mouse.justPressed)
 				{
 					FlxG.sound.play(Paths.sound('scrollMenu'));
 					curOption.setValue((curOption.getValue() == true) ? false : true);
@@ -200,13 +206,13 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 					reloadCheckboxes();
 				}
 			} else {
-				if(controls.UI_LEFT || controls.UI_RIGHT) {
-					var pressed = (controls.UI_LEFT_P || controls.UI_RIGHT_P);
+				if(controls.UI_LEFT || controls.UI_RIGHT || (FlxG.keys.pressed.SHIFT && FlxG.mouse.wheel != 0)) {
+					var pressed = (controls.UI_LEFT_P || controls.UI_RIGHT_P) || (FlxG.keys.pressed.SHIFT && FlxG.mouse.wheel != 0);
 					if(holdTime > 0.5 || pressed) {
 						if(pressed) {
 							var add:Dynamic = null;
 							if(curOption.type != 'string') {
-								add = controls.UI_LEFT ? -curOption.changeValue : curOption.changeValue;
+								add = controls.UI_LEFT || FlxG.mouse.wheel < 0 ? -curOption.changeValue : curOption.changeValue;
 							}
 
 							switch(curOption.type)

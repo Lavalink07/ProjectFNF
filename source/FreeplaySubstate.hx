@@ -301,8 +301,10 @@ class FreeplaySubstate extends MusicBeatSubstate
 			if(FlxG.mouse.wheel != 0)
 			{
 				FlxG.sound.play(Paths.sound('scrollMenu'), 0.2);
-				changeSelection(-shiftMult * FlxG.mouse.wheel, false);
-				changeDiff();
+				if (shiftMult == 1)
+					changeSelection(-FlxG.mouse.wheel, false);
+				else
+					changeDiff(FlxG.mouse.wheel);
 			}
 		}
 
@@ -312,7 +314,7 @@ class FreeplaySubstate extends MusicBeatSubstate
 			changeDiff(1);
 		else if (upP || downP) changeDiff();
 
-		if (controls.BACK)
+		if (controls.BACK || FlxG.mouse.justPressedRight)
 		{
 			persistentUpdate = false;
 			if(colorTween != null) {
@@ -328,7 +330,7 @@ class FreeplaySubstate extends MusicBeatSubstate
 			persistentUpdate = false;
 			openSubState(new GameplayChangersSubstate());
 		}
-		else if(space)
+		else if(space || FlxG.mouse.justPressedMiddle)
 		{
 			if(instPlaying != curSelected)
 			{
@@ -356,7 +358,7 @@ class FreeplaySubstate extends MusicBeatSubstate
 			}
 		}
 
-		else if (accepted)
+		else if (accepted || FlxG.mouse.justPressed)
 		{
 			persistentUpdate = false;
 			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
@@ -401,7 +403,7 @@ class FreeplaySubstate extends MusicBeatSubstate
 		else if(controls.RESET)
 		{
 			persistentUpdate = false;
-			openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter));
+			openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter, true));
 			FlxG.sound.play(Paths.sound('scrollMenu'));
 		}
 		super.update(elapsed);

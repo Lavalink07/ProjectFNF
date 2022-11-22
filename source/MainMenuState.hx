@@ -319,8 +319,13 @@ class MainMenuState extends MusicBeatState
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeItem(1);
 			}
+			if(FlxG.mouse.wheel != 0)
+			{
+				FlxG.sound.play(Paths.sound('scrollMenu'), 0.2);
+				changeItem(-FlxG.mouse.wheel);
+			}
 
-			if (controls.BACK)
+			if (controls.BACK || FlxG.mouse.justPressedRight)
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				activatedLogo = false;
@@ -332,7 +337,7 @@ class MainMenuState extends MusicBeatState
 				});
 			}
 
-			if (controls.ACCEPT)
+			if (controls.ACCEPT || FlxG.mouse.justPressed)
 			{
 				if (optionShit[curSelected] == 'donate')
 				{
@@ -393,7 +398,7 @@ class MainMenuState extends MusicBeatState
 			#end
 		}
 
-		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT;
+		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT || (FlxG.mouse.justPressed && FlxG.mouse.justPressedRight);
 
 		#if mobile
 		for (touch in FlxG.touches.list) pressedEnter = pressedEnter || touch.justPressed;
