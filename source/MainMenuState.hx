@@ -213,7 +213,7 @@ class MainMenuState extends MusicBeatState
 		add(versionShit);
 
 		swagShader = new ColorSwap();
-		if (FileSystem.exists(Paths.modsImages('logoBumpin')) && !FileSystem.exists(Paths.modsImages('titlelogo'))) {
+		if (#if MODS_ALLOWED FileSystem.exists(Paths.modsImages('logoBumpin')) && !FileSystem.exists(Paths.modsImages('titlelogo')) #else false #end) {
 			logoBl = new FlxSprite(FlxG.width * (4 / 7), 0);
 			logoBl.frames = Paths.getSparrowAtlas('logoBumpin');
 
