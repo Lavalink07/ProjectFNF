@@ -65,8 +65,8 @@ class MainMenuState extends MusicBeatState
 	var camFollowPos:FlxObject;
 	var debugKeys:Array<FlxKey>;
 
-	var logo:FlxSprite;
-	var logoBl:FlxSprite;
+	public var logo:FlxSprite;
+	public var logoBl:FlxSprite;
 	var swagShader:ColorSwap;
 	var credGroup:FlxGroup = new FlxGroup();
 	var ngSpr:FlxSprite;
@@ -94,12 +94,13 @@ class MainMenuState extends MusicBeatState
 		if (!initialized) {
 			if (FlxG.save.data != null && FlxG.save.data.fullscreen)
 				FlxG.fullscreen = FlxG.save.data.fullscreen;
-			persistentUpdate = true;
-			persistentDraw = true;
 		} 
-		if (FlxG.sound.music == null)
+		persistentUpdate = true;
+		persistentDraw = true;
+		if (FlxG.sound.music == null) {
 			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
-		Conductor.changeBPM(102);
+			Conductor.changeBPM(102);
+		}
 
 		if (FlxG.save.data.weekCompleted != null)
 			StoryMenuState.weekCompleted = FlxG.save.data.weekCompleted;
@@ -348,12 +349,8 @@ class MainMenuState extends MusicBeatState
 					{
 						if (curSelected != spr.ID)
 						{
-							FlxTween.tween(spr, {alpha: 0}, 0.4, {
-								ease: FlxEase.quadOut,
-								onComplete: function(twn:FlxTween)
-								{
-									spr.kill();
-								}
+							FlxTween.tween(spr, {x: -FlxG.width}, 0.75, {
+								ease: FlxEase.expoInOut,
 							});
 						}
 						else
@@ -368,6 +365,7 @@ class MainMenuState extends MusicBeatState
 										MusicBeatState.switchState(new StoryMenuState());
 									case 'freeplay':
 										somewhereElse = true;
+										camOther.alpha = 0;
 										openSubState(new FreeplaySubstate());
 									#if MODS_ALLOWED
 									case 'mods':
@@ -380,9 +378,8 @@ class MainMenuState extends MusicBeatState
 									case 'options':
 										LoadingState.loadAndSwitchState(new options.OptionsState());
 								}
-								spr.kill();
+								spr.x = -FlxG.width;
 							});
-
 						}
 					});
 				}
@@ -411,7 +408,7 @@ class MainMenuState extends MusicBeatState
 				sickBeats = 16;
 				beatHit();
 			}
-			else {
+			else if (!selectedSomethin) {
 				activatedLogo = true;
 				changeItem();
 				var logo:FlxSprite = logoBl != null ? logoBl : logo;
@@ -601,14 +598,14 @@ class MainMenuState extends MusicBeatState
 	}
 
 	override function closeSubState() {
-		if (somewhereElse)
+		if (somewhereElse) {
+			menuItems.forEach(function(spr:FlxSprite) {
+				FlxTween.tween(spr, {x: (FlxG.width - spr.width) / 6}, 0.4, {
+					ease: FlxEase.expoInOut});
+			});
 			changeItem();
+		}
 		selectedSomethin = somewhereElse = false;
-		menuItems.forEach(function(spr:FlxSprite) {
-			spr.revive();
-			FlxTween.tween(spr, {alpha: 1}, 0.4, {
-				ease: FlxEase.quadOut});
-		});
 		super.closeSubState();
 	}
 }

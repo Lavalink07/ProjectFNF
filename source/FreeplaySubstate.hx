@@ -15,6 +15,7 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import lime.utils.Assets;
 import flixel.system.FlxSound;
 import openfl.utils.Assets as OpenFlAssets;
@@ -63,6 +64,8 @@ class FreeplaySubstate extends MusicBeatSubstate
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("Freeplay", null);
 		#end
+
+		FlxTween.tween(MainMenuState.instance.camOther, {alpha: 1}, 0.4, {ease: FlxEase.expoInOut});
 
 		for (i in 0...WeekData.weeksList.length) {
 			if(weekIsLocked(WeekData.weeksList[i])) continue;
@@ -148,7 +151,7 @@ class FreeplaySubstate extends MusicBeatSubstate
 		add(scoreText);
 
 		if(curSelected >= songs.length) curSelected = 0;
-		intendedColor = MainMenuState.instance.bg.color;
+		intendedColor = MainMenuState.instance.bg.color = -7179779;
 
 		if(lastDifficultyName == '')
 		{
@@ -316,7 +319,8 @@ class FreeplaySubstate extends MusicBeatSubstate
 				colorTween.cancel();
 			}
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			close();
+			FlxTween.tween(MainMenuState.instance.camOther, {alpha: 0}, 0.4, {ease: FlxEase.expoInOut,
+				onComplete: function(tween:FlxTween) { close(); }});
 		}
 
 		if(ctrl)
@@ -377,11 +381,18 @@ class FreeplaySubstate extends MusicBeatSubstate
 				colorTween.cancel();
 			}
 			
-			if (FlxG.keys.pressed.SHIFT){
-				LoadingState.loadAndSwitchState(new ChartingState());
-			}else{
-				LoadingState.loadAndSwitchState(new PlayState());
-			}
+			var logo = MainMenuState.instance.logoBl != null ? MainMenuState.instance.logoBl : MainMenuState.instance.logo;
+			FlxTween.tween(MainMenuState.instance.camOther, {alpha: 0}, 0.4, {ease: FlxEase.expoInOut});
+			FlxTween.tween(logo, {x: (FlxG.width - logo.width) / 2}, 0.4, {ease: FlxEase.expoInOut,
+				onComplete: function(tween:FlxTween) {
+					FlxTransitionableState.skipNextTransIn = true;
+					if (FlxG.keys.pressed.SHIFT) {
+						LoadingState.loadAndSwitchState(new ChartingState());
+					} else {
+						LoadingState.loadAndSwitchState(new PlayState());
+					}
+			}});
+			FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
 
 			FlxG.sound.music.volume = 0;
 					
