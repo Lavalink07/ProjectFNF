@@ -83,8 +83,11 @@ class AchievementsMenuState extends MusicBeatState
 		if (controls.UI_DOWN_P) {
 			changeSelection(1);
 		}
+		if (FlxG.mouse.wheel != 0) {
+			changeSelection(-FlxG.mouse.wheel);
+		}
 
-		if (controls.BACK) {
+		if (controls.BACK || FlxG.mouse.justPressedRight) {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			MusicBeatState.switchState(new MainMenuState());
 		}

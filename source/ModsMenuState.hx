@@ -472,7 +472,7 @@ class ModsMenuState extends MusicBeatState
 			noModsTxt.alpha = 1 - Math.sin((Math.PI * noModsSine) / 180);
 		}
 
-		if(canExit && controls.BACK)
+		if(canExit && (controls.BACK || FlxG.mouse.justPressedRight))
 		{
 			if(colorTween != null) {
 				colorTween.cancel();
@@ -509,6 +509,11 @@ class ModsMenuState extends MusicBeatState
 		{
 			changeSelection(1);
 			FlxG.sound.play(Paths.sound('scrollMenu'));
+		}
+		if(FlxG.mouse.wheel != 0)
+		{
+			changeSelection(-FlxG.mouse.wheel);
+			FlxG.sound.play(Paths.sound('scrollMenu'), 0.2);
 		}
 		updatePosition(elapsed);
 		super.update(elapsed);

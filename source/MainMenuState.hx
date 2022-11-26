@@ -398,7 +398,7 @@ class MainMenuState extends MusicBeatState
 			#end
 		}
 
-		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT || (FlxG.mouse.justPressed && FlxG.mouse.justPressedRight);
+		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT || (FlxG.mouse.pressed && FlxG.mouse.pressedRight);
 
 		#if mobile
 		for (touch in FlxG.touches.list) pressedEnter = pressedEnter || touch.justPressed;
