@@ -103,6 +103,7 @@ class GameOverSubstate extends MusicBeatSubstate
 			}
 
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			Conductor.changeBPM(102);
 			PlayState.instance.callOnLuas('onGameOverConfirm', [false]);
 		}
 

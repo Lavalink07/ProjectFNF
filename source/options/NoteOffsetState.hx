@@ -40,6 +40,9 @@ class NoteOffsetState extends MusicBeatState
 	var beatTween:FlxTween;
 
 	var changeModeText:FlxText;
+	var health:Float = 1;
+	var healthBar:FlxBar;
+	var healthBarBG:AttachedSprite;
 
 	override public function create()
 	{
@@ -114,6 +117,22 @@ class NoteOffsetState extends MusicBeatState
 		comboNums = new FlxSpriteGroup();
 		comboNums.cameras = [camHUD];
 		add(comboNums);
+
+		healthBarBG = new AttachedSprite('healthBar');
+		healthBarBG.scrollFactor.set();
+		healthBarBG.cameras = [camHUD];
+		healthBarBG.xAdd = -4;
+		healthBarBG.yAdd = -4;
+		add(healthBarBG);
+
+		healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+			'health', 0, 2);
+		healthBar.scrollFactor.set();
+		healthBar.alpha = ClientPrefs.healthBarAlpha;
+		healthBar.cameras = [camHUD];
+		healthBar.createFilledBar(0xFFFF0000, 0xFF66FF33);
+		add(healthBar);
+		healthBarBG.sprTracker = healthBar;
 
 		var seperatedScore:Array<Int> = [];
 		for (i in 0...3)
@@ -203,7 +222,7 @@ class NoteOffsetState extends MusicBeatState
 
 	var holdTime:Float = 0;
 	var onComboMenu:Bool = true;
-	var holdingObjectType:Null<Bool> = null;
+	var holdingObjectType:Null<Int> = null;
 
 	var startMousePos:FlxPoint = new FlxPoint();
 	var startComboOffset:FlxPoint = new FlxPoint();
@@ -265,7 +284,7 @@ class NoteOffsetState extends MusicBeatState
 				if (startMousePos.x - comboNums.x >= 0 && startMousePos.x - comboNums.x <= comboNums.width &&
 					startMousePos.y - comboNums.y >= 0 && startMousePos.y - comboNums.y <= comboNums.height)
 				{
-					holdingObjectType = true;
+					holdingObjectType = 2;
 					startComboOffset.x = ClientPrefs.comboOffset[2];
 					startComboOffset.y = ClientPrefs.comboOffset[3];
 					//trace('yo bro');
@@ -273,10 +292,17 @@ class NoteOffsetState extends MusicBeatState
 				else if (startMousePos.x - rating.x >= 0 && startMousePos.x - rating.x <= rating.width &&
 						 startMousePos.y - rating.y >= 0 && startMousePos.y - rating.y <= rating.height)
 				{
-					holdingObjectType = false;
+					holdingObjectType = 0;
 					startComboOffset.x = ClientPrefs.comboOffset[0];
 					startComboOffset.y = ClientPrefs.comboOffset[1];
 					//trace('heya');
+				}
+				else if (startMousePos.x - healthBar.x >= 0 && startMousePos.x - healthBar.x <= healthBar.width &&
+						 startMousePos.y - healthBar.y >= 0 && startMousePos.y - healthBar.y <= healthBar.height)
+				{
+					holdingObjectType = 4;
+					startComboOffset.x = ClientPrefs.comboOffset[4];
+					startComboOffset.y = ClientPrefs.comboOffset[5];
 				}
 			}
 			if(FlxG.mouse.justReleased) {
@@ -289,9 +315,8 @@ class NoteOffsetState extends MusicBeatState
 				if(FlxG.mouse.justMoved)
 				{
 					var mousePos:FlxPoint = FlxG.mouse.getScreenPosition(camHUD);
-					var addNum:Int = holdingObjectType ? 2 : 0;
-					ClientPrefs.comboOffset[addNum + 0] = Math.round((mousePos.x - startMousePos.x) + startComboOffset.x);
-					ClientPrefs.comboOffset[addNum + 1] = -Math.round((mousePos.y - startMousePos.y) - startComboOffset.y);
+					ClientPrefs.comboOffset[holdingObjectType + 0] = Math.round((mousePos.x - startMousePos.x) + startComboOffset.x);
+					ClientPrefs.comboOffset[holdingObjectType + 1] = -Math.round((mousePos.y - startMousePos.y) - startComboOffset.y);
 					repositionCombo();
 				}
 			}
@@ -357,6 +382,7 @@ class NoteOffsetState extends MusicBeatState
 			CustomFadeTransition.nextCamera = camOther;
 			MusicBeatState.switchState(new options.OptionsState());
 			FlxG.sound.playMusic(Paths.music('freakyMenu'), 1, true);
+			Conductor.changeBPM(102);
 			FlxG.mouse.visible = false;
 		}
 
@@ -415,12 +441,16 @@ class NoteOffsetState extends MusicBeatState
 		comboNums.screenCenter();
 		comboNums.x = coolText.x - 90 + ClientPrefs.comboOffset[2];
 		comboNums.y += 80 - ClientPrefs.comboOffset[3];
+
+		healthBar.screenCenter(X);
+		healthBar.x += ClientPrefs.comboOffset[4];
+		healthBar.y = FlxG.height * (ClientPrefs.downScroll ? 0.11 : 0.89) - ClientPrefs.comboOffset[5];
 		reloadTexts();
 	}
 
 	function createTexts()
 	{
-		for (i in 0...4)
+		for (i in 0...6)
 		{
 			var text:FlxText = new FlxText(10, 48 + (i * 30), 0, '', 24);
 			text.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -446,6 +476,8 @@ class NoteOffsetState extends MusicBeatState
 				case 1: dumbTexts.members[i].text = '[' + ClientPrefs.comboOffset[0] + ', ' + ClientPrefs.comboOffset[1] + ']';
 				case 2: dumbTexts.members[i].text = 'Numbers Offset:';
 				case 3: dumbTexts.members[i].text = '[' + ClientPrefs.comboOffset[2] + ', ' + ClientPrefs.comboOffset[3] + ']';
+				case 4: dumbTexts.members[i].text = 'Health Bar Offset:';
+				case 5: dumbTexts.members[i].text = '[' + ClientPrefs.comboOffset[4] + ', ' + ClientPrefs.comboOffset[5] + ']';
 			}
 		}
 	}
@@ -460,6 +492,8 @@ class NoteOffsetState extends MusicBeatState
 	{
 		rating.visible = onComboMenu;
 		comboNums.visible = onComboMenu;
+		healthBar.visible = onComboMenu;
+		healthBarBG.visible = onComboMenu;
 		dumbTexts.visible = onComboMenu;
 		
 		timeBarBG.visible = !onComboMenu;

@@ -180,6 +180,7 @@ class PlayState extends MusicBeatState
 	public var gfSpeed:Int = 1;
 	public var health:Float = 1;
 	public var combo:Int = 0;
+	public var maxCombo:Int = 0;
 
 	private var healthBarBG:AttachedSprite;
 	public var healthBar:FlxBar;
@@ -264,6 +265,7 @@ class PlayState extends MusicBeatState
 	var tankmanRun:FlxTypedGroup<TankmenBG>;
 	var foregroundSprites:FlxTypedGroup<BGSprite>;
 
+	public var lerpSongScore:Int = 0;
 	public var songScore:Int = 0;
 	public var songHits:Int = 0;
 	public var songMisses:Int = 0;
@@ -356,13 +358,13 @@ class PlayState extends MusicBeatState
 		ratingsData.push(new Rating('sick')); //default rating
 
 		var rating:Rating = new Rating('good');
-		rating.ratingMod = 0.7;
+		rating.ratingMod = 0.66;
 		rating.score = 200;
 		rating.noteSplash = false;
 		ratingsData.push(rating);
 
 		var rating:Rating = new Rating('bad');
-		rating.ratingMod = 0.4;
+		rating.ratingMod = 0.33;
 		rating.score = 100;
 		rating.noteSplash = false;
 		ratingsData.push(rating);
@@ -1130,6 +1132,8 @@ class PlayState extends MusicBeatState
 		// healthBar
 		healthBar.visible = !ClientPrefs.hideHud;
 		healthBar.alpha = ClientPrefs.healthBarAlpha;
+		healthBar.x += ClientPrefs.comboOffset[4];
+		healthBar.y -= ClientPrefs.comboOffset[5];
 		add(healthBar);
 		healthBarBG.sprTracker = healthBar;
 
@@ -1146,8 +1150,8 @@ class PlayState extends MusicBeatState
 		add(iconP2);
 		reloadHealthBarColors();
 
-		scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
-		scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		scoreTxt = new FlxText(0, 0, FlxG.width - 2, "00000000", 12);
+		scoreTxt.setFormat(Paths.font("vcr.ttf"), 48, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		scoreTxt.scrollFactor.set();
 		scoreTxt.borderSize = 1.25;
 		scoreTxt.visible = !ClientPrefs.hideHud;
@@ -2305,29 +2309,6 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	public function updateScore(miss:Bool = false)
-	{
-		scoreTxt.text = 'Score: ' + songScore
-		+ ' | Misses: ' + songMisses
-		+ ' | Rating: ' + ratingName
-		+ (ratingName != '?' ? ' (${Highscore.floorDecimal(ratingPercent * 100, 2)}%) - $ratingFC' : '');
-
-		if(ClientPrefs.scoreZoom && !miss && !cpuControlled)
-		{
-			if(scoreTxtTween != null) {
-				scoreTxtTween.cancel();
-			}
-			scoreTxt.scale.x = 1.075;
-			scoreTxt.scale.y = 1.075;
-			scoreTxtTween = FlxTween.tween(scoreTxt.scale, {x: 1, y: 1}, 0.2, {
-				onComplete: function(twn:FlxTween) {
-					scoreTxtTween = null;
-				}
-			});
-		}
-		callOnLuas('onUpdateScore', [miss]);
-	}
-
 	public function setSongTime(time:Float)
 	{
 		if(time < 0) time = 0;
@@ -3086,6 +3067,15 @@ class PlayState extends MusicBeatState
 			cancelMusicFadeTween();
 			MusicBeatState.switchState(new CharacterEditorState(SONG.player2));
 		}
+
+		lerpSongScore = Math.floor(FlxMath.lerp(lerpSongScore, songScore, CoolUtil.boundTo(FlxG.elapsed * 10, 0, 1)));
+		if (Math.abs(songScore - lerpSongScore) < 10) lerpSongScore = songScore;
+		lerpRatingPercent = FlxMath.lerp(lerpRatingPercent, ratingPercent, CoolUtil.boundTo(elapsed * 12, 0, 1));
+		if (Math.abs(lerpRatingPercent - ratingPercent) <= 0.01) lerpRatingPercent = ratingPercent;
+		var ratingSplit:Array<String> = Std.string(Highscore.floorDecimal(lerpRatingPercent * 100, 2)).split('.');
+		if (ratingSplit.length < 2) ratingSplit.push('');
+		while (ratingSplit[1].length < 2) ratingSplit[1] += '0';
+		scoreTxt.text = '$lerpSongScore\n${ratingSplit.join('.')}%';
 		
 		if (startedCountdown)
 		{
@@ -3977,6 +3967,7 @@ class PlayState extends MusicBeatState
 				{
 					WeekData.loadTheFirstEnabledMod();
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					Conductor.changeBPM(102);
 
 					cancelMusicFadeTween();
 					if(FlxTransitionableState.skipNextTransIn) {
@@ -4048,6 +4039,7 @@ class PlayState extends MusicBeatState
 				MusicBeatState.switchState(new MainMenuState());
 				MainMenuState.instance.openSubState(new FreeplaySubstate());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				Conductor.changeBPM(102);
 				changedDifficulty = false;
 			}
 			transitioning = true;
@@ -4129,7 +4121,7 @@ class PlayState extends MusicBeatState
 		//
 
 		var rating:FlxSprite = new FlxSprite();
-		var score:Int = 350;
+		var score:Int = 300;
 
 		//tryna do MS based judgment due to popular demand
 		var daRating:Rating = Conductor.judgeNote(note, noteDiff / playbackRate);
@@ -4145,8 +4137,8 @@ class PlayState extends MusicBeatState
 			spawnNoteSplashOnNote(note);
 		}
 
-		if(!practiceMode && !cpuControlled) {
-			songScore += score;
+		if(!practiceMode) {
+			songScore += Std.int(score * Math.log(Math.max(1, maxCombo - 1)) * (Math.exp(ratingPercent * 10) / 10000));
 			if(!note.ratingDisabled)
 			{
 				songHits++;
@@ -4214,11 +4206,9 @@ class PlayState extends MusicBeatState
 
 		var seperatedScore:Array<Int> = [];
 
-		if(combo >= 1000) {
-			seperatedScore.push(Math.floor(combo / 1000) % 10);
-		}
-		seperatedScore.push(Math.floor(combo / 100) % 10);
-		seperatedScore.push(Math.floor(combo / 10) % 10);
+		if(combo >= 1000) seperatedScore.push(Math.floor(combo / 1000) % 10);
+		if(combo >= 100) seperatedScore.push(Math.floor(combo / 100) % 10);
+		if(combo >= 10) seperatedScore.push(Math.floor(combo / 10) % 10);
 		seperatedScore.push(combo % 10);
 
 		var daLoop:Int = 0;
@@ -4694,6 +4684,7 @@ class PlayState extends MusicBeatState
 			if (!note.isSustainNote)
 			{
 				combo += 1;
+				maxCombo = Math.max(maxCombo, combo);
 				if(combo > 9999) combo = 9999;
 				popUpScore(note);
 			}
@@ -5195,6 +5186,7 @@ class PlayState extends MusicBeatState
 	}
 
 	public var ratingName:String = '?';
+	public var lerpRatingPercent:Float;
 	public var ratingPercent:Float;
 	public var ratingFC:String;
 	public function RecalculateRating(badHit:Bool = false) {
@@ -5205,41 +5197,35 @@ class PlayState extends MusicBeatState
 		var ret:Dynamic = callOnLuas('onRecalculateRating', [], false);
 		if(ret != FunkinLua.Function_Stop)
 		{
-			if(totalPlayed < 1) //Prevent divide by 0
-				ratingName = '?';
+			// Rating Percent
+
+			ratingPercent = totalPlayed == 0 ? 1 : Math.min(1, Math.max(0, (sicks * 300 + goods * 200 + bads * 100 + shits * 50) / (totalPlayed * 300)));
+			//trace((totalNotesHit / totalPlayed) + ', Total: ' + totalPlayed + ', notes hit: ' + totalNotesHit);
+
+			// Rating Name
+			if(ratingPercent >= 1)
+			{
+				ratingName = ratingStuff[ratingStuff.length-1][0]; //Uses last string
+			}
 			else
 			{
-				// Rating Percent
-				ratingPercent = Math.min(1, Math.max(0, totalNotesHit / totalPlayed));
-				//trace((totalNotesHit / totalPlayed) + ', Total: ' + totalPlayed + ', notes hit: ' + totalNotesHit);
-
-				// Rating Name
-				if(ratingPercent >= 1)
+				for (i in 0...ratingStuff.length-1)
 				{
-					ratingName = ratingStuff[ratingStuff.length-1][0]; //Uses last string
-				}
-				else
-				{
-					for (i in 0...ratingStuff.length-1)
+					if(ratingPercent < ratingStuff[i][1])
 					{
-						if(ratingPercent < ratingStuff[i][1])
-						{
-							ratingName = ratingStuff[i][0];
-							break;
-						}
+						ratingName = ratingStuff[i][0];
+						break;
 					}
 				}
 			}
-
-			// Rating FC
-			ratingFC = "";
-			if (sicks > 0) ratingFC = "SFC";
-			if (goods > 0) ratingFC = "GFC";
-			if (bads > 0 || shits > 0) ratingFC = "FC";
-			if (songMisses > 0 && songMisses < 10) ratingFC = "SDCB";
-			else if (songMisses >= 10) ratingFC = "Clear";
 		}
-		updateScore(badHit); // score will only update after rating is calculated, if it's a badHit, it shouldn't bounce -Ghost
+
+		// Rating FC
+		ratingFC = "SFC";
+		if (goods > 0) ratingFC = "GFC";
+		if (bads > 0 || shits > 0) ratingFC = "FC";
+		if (songMisses > 0 && songMisses < 10) ratingFC = "SDCB";
+		else if (songMisses >= 10) ratingFC = "Clear";
 		setOnLuas('rating', ratingPercent);
 		setOnLuas('ratingName', ratingName);
 		setOnLuas('ratingFC', ratingFC);

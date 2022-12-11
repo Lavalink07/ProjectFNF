@@ -70,6 +70,7 @@ class GitarooPause extends MusicBeatState
 				PlayState.cpuControlled = false;
 				MusicBeatState.switchState(new MainMenuState());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				Conductor.changeBPM(102);
 			}
 		}
 
