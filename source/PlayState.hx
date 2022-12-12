@@ -992,7 +992,7 @@ class PlayState extends MusicBeatState
 		if(dad.curCharacter.startsWith('gf')) {
 			dad.setPosition(GF_X, GF_Y);
 			if(gf != null)
-				gf.visible = false;
+				gf.visible = gf.active = false;
 		}
 
 		switch(curStage)
@@ -1035,7 +1035,7 @@ class PlayState extends MusicBeatState
 		timeTxt.scrollFactor.set();
 		timeTxt.alpha = 0;
 		timeTxt.borderSize = 2;
-		timeTxt.visible = showTime;
+		timeTxt.visible = timeTxt.active = showTime;
 		if(ClientPrefs.downScroll) timeTxt.y = FlxG.height - 44;
 
 		if(ClientPrefs.timeBarType == 'Song Name')
@@ -1049,7 +1049,7 @@ class PlayState extends MusicBeatState
 		timeBarBG.y = timeTxt.y + (timeTxt.height / 4);
 		timeBarBG.scrollFactor.set();
 		timeBarBG.alpha = 0;
-		timeBarBG.visible = showTime;
+		timeBarBG.visible = timeBarBG.active = showTime;
 		timeBarBG.color = FlxColor.BLACK;
 		timeBarBG.xAdd = -4;
 		timeBarBG.yAdd = -4;
@@ -1061,7 +1061,7 @@ class PlayState extends MusicBeatState
 		timeBar.createFilledBar(0xFF000000, 0xFFFFFFFF);
 		timeBar.numDivisions = 800; //How much lag this causes?? Should i tone it down to idk, 400 or 200?
 		timeBar.alpha = 0;
-		timeBar.visible = showTime;
+		timeBar.visible = timeBar.active = showTime;
 		add(timeBar);
 		add(timeTxt);
 		timeBarBG.sprTracker = timeBar;
@@ -1120,7 +1120,7 @@ class PlayState extends MusicBeatState
 		healthBarBG.y = FlxG.height * 0.89;
 		healthBarBG.screenCenter(X);
 		healthBarBG.scrollFactor.set();
-		healthBarBG.visible = !ClientPrefs.hideHud;
+		healthBarBG.visible = healthBarBG.active = !ClientPrefs.hideHud;
 		healthBarBG.xAdd = -4;
 		healthBarBG.yAdd = -4;
 		add(healthBarBG);
@@ -1130,7 +1130,7 @@ class PlayState extends MusicBeatState
 			'health', 0, 2);
 		healthBar.scrollFactor.set();
 		// healthBar
-		healthBar.visible = !ClientPrefs.hideHud;
+		healthBar.visible = healthBar.active = !ClientPrefs.hideHud;
 		healthBar.alpha = ClientPrefs.healthBarAlpha;
 		healthBar.x += ClientPrefs.comboOffset[4];
 		healthBar.y -= ClientPrefs.comboOffset[5];
@@ -1139,13 +1139,13 @@ class PlayState extends MusicBeatState
 
 		iconP1 = new HealthIcon(boyfriend.healthIcon, true);
 		iconP1.y = healthBar.y - 75;
-		iconP1.visible = !ClientPrefs.hideHud;
+		iconP1.visible = iconP1.active = !ClientPrefs.hideHud;
 		iconP1.alpha = ClientPrefs.healthBarAlpha;
 		add(iconP1);
 
 		iconP2 = new HealthIcon(dad.healthIcon, false);
 		iconP2.y = healthBar.y - 75;
-		iconP2.visible = !ClientPrefs.hideHud;
+		iconP2.visible = iconP2.active = !ClientPrefs.hideHud;
 		iconP2.alpha = ClientPrefs.healthBarAlpha;
 		add(iconP2);
 		reloadHealthBarColors();
@@ -1154,14 +1154,14 @@ class PlayState extends MusicBeatState
 		scoreTxt.setFormat(Paths.font("vcr.ttf"), 48, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		scoreTxt.scrollFactor.set();
 		scoreTxt.borderSize = 1.25;
-		scoreTxt.visible = !ClientPrefs.hideHud;
+		scoreTxt.visible = scoreTxt.active = !ClientPrefs.hideHud;
 		add(scoreTxt);
 
 		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		botplayTxt.scrollFactor.set();
 		botplayTxt.borderSize = 1.25;
-		botplayTxt.visible = cpuControlled;
+		botplayTxt.visible = botplayTxt.active = cpuControlled;
 		add(botplayTxt);
 		if(ClientPrefs.downScroll) {
 			botplayTxt.y = timeBarBG.y - 78;
@@ -3068,7 +3068,7 @@ class PlayState extends MusicBeatState
 			MusicBeatState.switchState(new CharacterEditorState(SONG.player2));
 		}
 
-		lerpSongScore = Math.floor(FlxMath.lerp(lerpSongScore, songScore, CoolUtil.boundTo(FlxG.elapsed * 10, 0, 1)));
+		lerpSongScore = Math.floor(FlxMath.lerp(lerpSongScore, songScore, CoolUtil.boundTo(elapsed * 10, 0, 1)));
 		if (Math.abs(songScore - lerpSongScore) < 10) lerpSongScore = songScore;
 		lerpRatingPercent = FlxMath.lerp(lerpRatingPercent, ratingPercent, CoolUtil.boundTo(elapsed * 12, 0, 1));
 		if (Math.abs(lerpRatingPercent - ratingPercent) <= 0.01) lerpRatingPercent = ratingPercent;
@@ -3739,7 +3739,7 @@ class PlayState extends MusicBeatState
 									gf.visible = true;
 								}
 							} else if(gf != null) {
-								gf.visible = false;
+								gf.visible = gf.active = false;
 							}
 							dad.alpha = lastAlpha;
 							iconP2.changeIcon(dad.healthIcon);
@@ -4114,12 +4114,6 @@ class PlayState extends MusicBeatState
 		vocals.volume = 1;
 
 		var placement:String = Std.string(combo);
-
-		var coolText:FlxText = new FlxText(0, 0, 0, placement, 32);
-		coolText.screenCenter();
-		coolText.x = FlxG.width * 0.35;
-		//
-
 		var rating:FlxSprite = new FlxSprite();
 		var score:Int = 300;
 
@@ -4159,22 +4153,23 @@ class PlayState extends MusicBeatState
 		rating.loadGraphic(Paths.image(pixelShitPart1 + daRating.image + pixelShitPart2));
 		rating.cameras = [camHUD];
 		rating.screenCenter();
-		rating.x = coolText.x - 40;
+		rating.x = FlxG.width * 0.35 - 40;
 		rating.y -= 60;
 		rating.acceleration.y = 550 * playbackRate * playbackRate;
 		rating.velocity.y -= FlxG.random.int(140, 175) * playbackRate;
 		rating.velocity.x -= FlxG.random.int(0, 10) * playbackRate;
-		rating.visible = (!ClientPrefs.hideHud && showRating);
+		rating.visible = rating.active = (!ClientPrefs.hideHud && showRating);
 		rating.x += ClientPrefs.comboOffset[0];
 		rating.y -= ClientPrefs.comboOffset[1];
 
-		var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2));
+		var comboSpr:FlxSprite = new FlxSprite();
+		comboSpr.visible = comboSpr.active = (!ClientPrefs.hideHud && showCombo);
+		if (comboSpr.active) comboSpr.loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2));
 		comboSpr.cameras = [camHUD];
 		comboSpr.screenCenter();
-		comboSpr.x = coolText.x;
+		comboSpr.x = FlxG.width * 0.35;
 		comboSpr.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
 		comboSpr.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
-		comboSpr.visible = (!ClientPrefs.hideHud && showCombo);
 		comboSpr.x += ClientPrefs.comboOffset[0];
 		comboSpr.y -= ClientPrefs.comboOffset[1];
 		comboSpr.y += 60;
@@ -4184,7 +4179,7 @@ class PlayState extends MusicBeatState
 		
 		if (!ClientPrefs.comboStacking)
 		{
-			if (lastRating != null) lastRating.kill();
+			if (lastRating != null) lastRating.destroy();
 			lastRating = rating;
 		}
 
@@ -4219,14 +4214,14 @@ class PlayState extends MusicBeatState
 		}
 		if (!ClientPrefs.comboStacking)
 		{
-			if (lastCombo != null) lastCombo.kill();
+			if (lastCombo != null) lastCombo.destroy();
 			lastCombo = comboSpr;
 		}
 		if (lastScore != null)
 		{
 			while (lastScore.length > 0)
 			{
-				lastScore[0].kill();
+				lastScore[0].destroy();
 				lastScore.remove(lastScore[0]);
 			}
 		}
@@ -4235,7 +4230,7 @@ class PlayState extends MusicBeatState
 			var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'num' + Std.int(i) + pixelShitPart2));
 			numScore.cameras = [camHUD];
 			numScore.screenCenter();
-			numScore.x = coolText.x + (43 * daLoop) - 90;
+			numScore.x = FlxG.width * 0.35 + (43 * daLoop) - 90;
 			numScore.y += 80;
 
 			numScore.x += ClientPrefs.comboOffset[2];
@@ -4258,7 +4253,7 @@ class PlayState extends MusicBeatState
 			numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
 			numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
 			numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
-			numScore.visible = !ClientPrefs.hideHud;
+			numScore.visible = numScore.active = !ClientPrefs.hideHud;
 
 			//if (combo >= 10 || combo == 0)
 			if(showComboNum)
@@ -4281,20 +4276,19 @@ class PlayState extends MusicBeatState
 			trace(seperatedScore);
 		 */
 
-		coolText.text = Std.string(seperatedScore);
-		// add(coolText);
 
 		FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
+			onComplete: function(tween:FlxTween)
+			{
+				rating.destroy();
+			},
 			startDelay: Conductor.crochet * 0.001 / playbackRate
 		});
 
 		FlxTween.tween(comboSpr, {alpha: 0}, 0.2 / playbackRate, {
 			onComplete: function(tween:FlxTween)
 			{
-				coolText.destroy();
 				comboSpr.destroy();
-
-				rating.destroy();
 			},
 			startDelay: Conductor.crochet * 0.002 / playbackRate
 		});
@@ -4684,7 +4678,7 @@ class PlayState extends MusicBeatState
 			if (!note.isSustainNote)
 			{
 				combo += 1;
-				maxCombo = Math.max(maxCombo, combo);
+				maxCombo = Std.int(Math.max(maxCombo, combo));
 				if(combo > 9999) combo = 9999;
 				popUpScore(note);
 			}
