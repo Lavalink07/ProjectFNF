@@ -1,8 +1,8 @@
 # Friday Night Funkin' - ProjectFNF Forked-Lavalink07
-# ====================EDITS====================
+# =====EDITS=====
 # Winning Icons
 # Updated Ratings
-# ===================ProjectFNF===================
+# =====ProjectFNF=====
 # Features
 * [All Psych Engine features](https://github.com/ShadowMario/FNF-PsychEngine/tree/0.6.3#features)
 * New gameplay options (moving camera on note hit, camera shake on miss, new score bar)
