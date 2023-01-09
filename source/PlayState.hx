@@ -75,14 +75,16 @@ class PlayState extends MusicBeatState
 	public static var STRUM_X_MIDDLESCROLL = -278;
 
 	public static var ratingStuff:Array<Dynamic> = [
-		['=F=', 0.4], //From 0% to 39%
-		['!E!', 0.5], //From 40% to 49%
-		['@D@', 0.6], //From 50% to 59%
-		['#C#', 0.7], //From 60% to 68%
-		['$B$', 0.8], //From 70% to 79%
-		['^A^', 0.9], //From 80% to 89%
-		['&S&', 0.99], //From 90% to 99%
-		['_SS_', 1]
+		['Terrible Just Terrible!', 0.2], //From 0% to 19%
+		['Just Restart!', 0.4], //From 20% to 39%
+		['Come On', 0.5], //From 40% to 49%
+		['Really', 0.6], //From 50% to 59%
+		['Eh', 0.69], //From 60% to 68%
+		['Nice try', 0.7], //69%
+		['Almost', 0.8], //From 70% to 79%
+		['Sweet', 0.9], //From 80% to 89%
+		['Awesome', 1], //From 90% to 99%
+		['Perfection', 1] //The value on this one isn't used actually, since Perfect is always "1"
 	];
 	public static var healthStuff:Array<Dynamic> = [
 		['=', 0],
@@ -178,8 +180,8 @@ class PlayState extends MusicBeatState
 	private var curSong:String = "";
 
 	public var gfSpeed:Int = 1;
-	public var health:Float = 1;
-	public var maxHealth:Float = 2;
+	public var health:Float = 0.5;
+	public var maxHealth:Float = 3;
 	public var healthDrained:Float = 1;
 	public var healthPercentageDisplay:Float = 50;
 	public var healthPercentageBar:Float = 50;
@@ -1259,7 +1261,7 @@ class PlayState extends MusicBeatState
 		add(scoreTxtBG);
 		add(scoreTxt);
 
-		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
+		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "Listening", 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		botplayTxt.scrollFactor.set();
 		botplayTxt.borderSize = 1.25;
@@ -2321,13 +2323,14 @@ class PlayState extends MusicBeatState
 					}
 				}
 			}
-			thScoreHealthTxt = ' (${FlxMath.roundDecimal(thScore, 0)}) // Health: $healthStyle$oldPercentage%$healthStyle';
+			thScoreHealthTxt = ' (${FlxMath.roundDecimal(thScore, 0)}) | Health: $healthStyle$oldPercentage%$healthStyle';
 			if (pressMisses > 0)
 				pressMissesTxt = ' (+$pressMisses)';
 			accuracyTxt = ' // Accuracy: $accuracyPercentage%$ratingFC';
-			perfRatingTxt = ' (${Highscore.floorDecimal(performancePoints, performancePoints < 100 ? 1 : 0)}pp)';
+			perfRatingTxt = ' (${Highscore.floorDecimal(performancePoints, performancePoints < 100 ? 1 : 0)})';
 		}
-		scoreTxt.applyMarkup('Score$unrankedTxt: ${FlxMath.roundDecimal(songScore, 0)}$thScoreHealthTxt // Misses: $songMisses$pressMissesTxt$accuracyTxt // Rating: $ratingName$suffix$perfRatingTxt',
+		
+		scoreTxt.applyMarkup('${FlxMath.roundDecimal(songScore, 0)}$thScoreHealthTxt | Misses: $songMisses$accuracyTxt | Rating: $ratingName | Notes Hit: $songHits',
 			[
 				new FlxTextFormatMarkerPair(redFormat, '!'),
 				new FlxTextFormatMarkerPair(orangeFormat, '@'),
@@ -3122,9 +3125,9 @@ class PlayState extends MusicBeatState
 		var iconOffset:Int = 26;
 
 		var axis:Float = ClientPrefs.healthBarType == 'Horizontal' ? healthBar.x : FlxG.height * 0.11;
-		var newP1:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthPercentageBar, 0, 100, 100, 0) * 0.01)) + (150 * iconP1.scale.x - 150) / 2 - iconOffset);
-		var oldP2:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (150 * iconP2.scale.x) / 2 - iconOffset * 2);
-		var newP2:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthPercentageBar, 0, 100, 100, 0) * 0.01)) - (150 * iconP2.scale.x) / 2 - iconOffset * 2);
+		var newP1:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthPercentageBar, 0, 100, 100, 0) * 0.01)) + (150 * iconP1.scale.x - 150) / 4 - iconOffset);
+		var oldP2:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthBar.percent, 0, 100, 100, 0) * 0.01)) - (150 * iconP2.scale.x) / 4 - iconOffset * 4);
+		var newP2:Float = axis + ((healthBar.width * (FlxMath.remapToRange(healthPercentageBar, 0, 100, 100, 0) * 0.01)) - (150 * iconP2.scale.x) / 4 - iconOffset * 4);
 
 		if (ClientPrefs.healthBarType == 'Horizontal') {
 			iconP1.x = newP1;
@@ -3152,13 +3155,17 @@ class PlayState extends MusicBeatState
 		/*if (health > 2)
 			health = 2;*/
 
-		if (healthPercentageBar < 20)
+		if (healthBar.percent < 20)
 			iconP1.animation.curAnim.curFrame = 1;
+		else if (healthBar.percent > 80)
+			iconP1.animation.curAnim.curFrame = 2;
 		else
 			iconP1.animation.curAnim.curFrame = 0;
 
-		if (healthPercentageBar > 80)
+		if (healthBar.percent > 80)
 			iconP2.animation.curAnim.curFrame = 1;
+		else if (healthBar.percent < 20)
+			iconP2.animation.curAnim.curFrame = 2;
 		else
 			iconP2.animation.curAnim.curFrame = 0;
 
@@ -3370,7 +3377,7 @@ class PlayState extends MusicBeatState
 				// Kill extremely late notes and cause misses
 				if (Conductor.songPosition > noteKillOffset + daNote.strumTime)
 				{
-					if (daNote.mustPress && /*!cpuControlled &&*/!daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit)) {
+					if (daNote.mustPress && /*!cpuControlled &&*/!daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit) && Conductor.songPosition - elapsed > daNote.strumTime) {
 						noteMiss(daNote);
 					}
 
