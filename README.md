@@ -2,8 +2,8 @@
 # ====================EDITS====================
 # Winning Icons
 # Updated Ratings
+# ===================ProjectFNF===================
 # Features
-# ====================ProjectFNF====================
 * [All Psych Engine features](https://github.com/ShadowMario/FNF-PsychEngine/tree/0.6.3#features)
 * New gameplay options (moving camera on note hit, camera shake on miss, new score bar)
 * New modifiers (opponent notes doing damage, misses decreasing max health, karma system)
