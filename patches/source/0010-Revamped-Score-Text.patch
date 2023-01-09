@@ -5,9 +5,9 @@ Subject: [PATCH] Add visual options 'Advanced Score Text' and 'Score Text Underl
 
 ---
  source/ClientPrefs.hx               |  10 ++
- source/PlayState.hx                 | 228 +++++++++++++++++++++++-----
+ source/PlayState.hx                 | 186 ++++++++++++++++++++++++----
  source/options/VisualsUISubState.hx |  19 +++
- 3 files changed, 219 insertions(+), 38 deletions(-)
+ 3 files changed, 194 insertions(+), 21 deletions(-)
 
 diff --git a/source/ClientPrefs.hx b/source/ClientPrefs.hx
 index 3368b24..10df0e3 100644
@@ -45,7 +45,7 @@ index 3368b24..10df0e3 100644
  		// flixel automatically saves your volume!
  		if(FlxG.save.data.volume != null)
 diff --git a/source/PlayState.hx b/source/PlayState.hx
-index 42ed24d..65c1782 100644
+index 8c11f70..d3e8740 100644
 --- a/source/PlayState.hx
 +++ b/source/PlayState.hx
 @@ -75,17 +75,33 @@ class PlayState extends MusicBeatState
@@ -151,7 +151,7 @@ index 42ed24d..65c1782 100644
  		add(scoreTxt);
  
  		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
-@@ -2197,10 +2230,70 @@ class PlayState extends MusicBeatState
+@@ -2197,10 +2230,95 @@ class PlayState extends MusicBeatState
  
  	public function updateScore(miss:Bool = false)
  	{
@@ -185,15 +185,13 @@ index 42ed24d..65c1782 100644
 +			else if (nearestTen - maniaAccuracyPercentage < 1) suffix = "++";
 +		}
 +
-+		var thScoreHealthTxt:String = '';
-+		var pressMissesTxt:String = '';
-+		var accuracyTxt:String = '';
-+		var perfRatingTxt:String = '';
-+
 +		var usedPractice:Bool = (ClientPrefs.getGameplaySetting('practice', false) || ClientPrefs.getGameplaySetting('botplay', false));
 +		if (!unranked && (cpuControlled || practiceMode || chartingMode || usedPractice)) unranked = true;
 +
-+		var unrankedTxt:String = unranked ? ' ![UNRANKED]!' : '';
++		var buffer:StringBuf = new StringBuf();
++		buffer.add('Score:');
++		if (unranked) buffer.add('![UNRANKED]! ');
++		buffer.add(FlxMath.roundDecimal(songScore, 0));
 +		if (ClientPrefs.advancedScoreTxt) {
 +			var healthStyle:String = '';
 +			if(health >= 2) {
@@ -206,13 +204,40 @@ index 42ed24d..65c1782 100644
 +					}
 +				}
 +			}
-+			thScoreHealthTxt = ' (${FlxMath.roundDecimal(thScore, 0)}) // Health: $healthStyle$oldPercentage%$healthStyle';
-+			if (pressMisses > 0)
-+				pressMissesTxt = ' (+$pressMisses)';
-+			accuracyTxt = ' // Accuracy: $accuracyPercentage%$ratingFC';
-+			perfRatingTxt = ' (${Highscore.floorDecimal(performancePoints, performancePoints < 100 ? 1 : 0)}pp)';
++			if (thScore != songScore) {
++				buffer.add(' (-');
++				buffer.add(FlxMath.roundDecimal(thScore - songScore, 0));
++				buffer.add(')');
++			}
++			buffer.add(' // Health:');
++			buffer.add(healthStyle);
++			buffer.add(oldPercentage);
++			buffer.add('%');
++			buffer.add(healthStyle);
 +		}
-+		scoreTxt.applyMarkup('Score$unrankedTxt: ${FlxMath.roundDecimal(songScore, 0)}$thScoreHealthTxt // Misses: $songMisses$pressMissesTxt$accuracyTxt // Rating: $ratingName$suffix$perfRatingTxt',
++		buffer.add(' // Misses:');
++		buffer.add(songMisses);
++		if (ClientPrefs.advancedScoreTxt) {
++			if (pressMisses > 0) {
++				buffer.add(' (+');
++				buffer.add(pressMisses);
++				buffer.add(')');
++			}
++			buffer.add(' // Accuracy:');
++			buffer.add(accuracyPercentage);
++			buffer.add('%');
++			buffer.add(ratingFC);
++		}
++		buffer.add(' // Rating:');
++		buffer.add(ratingName);
++		buffer.add(suffix);
++		if (ClientPrefs.advancedScoreTxt) {
++			buffer.add(' (');
++			buffer.add(Highscore.floorDecimal(performancePoints, performancePoints < 100 ? 1 : 0));
++			buffer.add('pp)');
++		}
++
++		scoreTxt.applyMarkup(buffer.toString(),
 +			[
 +				new FlxTextFormatMarkerPair(redFormat, '!'),
 +				new FlxTextFormatMarkerPair(orangeFormat, '@'),
@@ -226,7 +251,7 @@ index 42ed24d..65c1782 100644
  
  		if(ClientPrefs.scoreZoom && !miss && !cpuControlled)
  		{
-@@ -2942,6 +3035,20 @@ class PlayState extends MusicBeatState
+@@ -2942,6 +3060,15 @@ class PlayState extends MusicBeatState
  		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
  		// FlxG.watch.addQuick('VOLRight', vocals.amplitudeRight);
  
@@ -236,18 +261,13 @@ index 42ed24d..65c1782 100644
 +		if (ClientPrefs.advancedScoreTxt && oldPercentage != Highscore.floorDecimal(healthPercentageDisplay, 0))
 +			updateScore(true);
 +		if (Conductor.songPosition >= 0) songSpeeds += songSpeed * elapsed;
-+		if (activeTime > 0) {
-+			for (i in 0...strainKeys.length) {
-+				var newValue:Float = Math.max(strainKeys[i] - elapsed * Math.max(1, strainKeys[i] / 10) / songSpeed, 0.25);
-+				strainKeys[i] = newValue;
-+			}
++		if (strainTime > 0)
 +			holdStrainTimer = Math.max(0, holdStrainTimer - elapsed);
-+		}
 +
  		var mult:Float = FlxMath.lerp(1, iconP1.scale.x, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1));
  		iconP1.scale.set(mult, mult);
  		iconP1.updateHitbox();
-@@ -2958,12 +3065,12 @@ class PlayState extends MusicBeatState
+@@ -2958,12 +3085,12 @@ class PlayState extends MusicBeatState
  		if (health > 2)
  			health = 2;
  
@@ -262,23 +282,30 @@ index 42ed24d..65c1782 100644
  			iconP2.animation.curAnim.curFrame = 1;
  		else
  			iconP2.animation.curAnim.curFrame = 0;
-@@ -3056,6 +3163,7 @@ class PlayState extends MusicBeatState
+@@ -3056,6 +3183,14 @@ class PlayState extends MusicBeatState
  				unspawnNotes.splice(index, 1);
  			}
  		}
-+		if (totalPlayed > 0) activeTime += elapsed * (notes.length > 0 ? 1 : 0.5);
++		var anyMustPress:Bool = false;
++		for (note in notes) {
++			if (note.mustPress) {
++				anyMustPress = true;
++				break;
++			}
++		}
++		if (totalPlayed > 0) strainTime += elapsed * (notes.length > 0 ? (anyMustPress ? 1 : 0.5) : 0.1);
  
  		if (generatedMusic)
  		{
-@@ -3137,6 +3245,7 @@ class PlayState extends MusicBeatState
+@@ -3137,6 +3272,7 @@ class PlayState extends MusicBeatState
  					if(daNote.isSustainNote) {
  						if(daNote.canBeHit) {
  							goodNoteHit(daNote);
-+							if (!daNote.wasGoodHit) strainKeys[daNote.noteData] += songSpeed * (holdStrainTimer > 0 ? 0.2 : 0.05);
++							if (!daNote.wasGoodHit) strainKeys[daNote.noteData] += Math.log(songSpeed) * Math.exp(Conductor.songPosition / songLength) * (holdStrainTimer > 0 ? 0.2 : 0.05);
  						}
  					} else if(daNote.strumTime <= Conductor.songPosition || (daNote.isSustainNote && daNote.canBeHit && daNote.mustPress)) {
  						goodNoteHit(daNote);
-@@ -3842,12 +3951,19 @@ class PlayState extends MusicBeatState
+@@ -3842,12 +3978,19 @@ class PlayState extends MusicBeatState
  
  		var ret:Dynamic = callOnLuas('onEndSong', [], false);
  		if(ret != FunkinLua.Function_Stop && !transitioning) {
@@ -293,14 +320,15 @@ index 42ed24d..65c1782 100644
 +			if (SONG.validScore && !unranked)
  			{
  				#if !switch
- 				var percent:Float = ratingPercent;
+-				var percent:Float = ratingPercent;
++				percent /= totalPlayed;
  				if(Math.isNaN(percent)) percent = 0;
 -				Highscore.saveScore(SONG.song, songScore, storyDifficulty, percent);
 +				Highscore.saveScore(SONG.song, songScore, storyDifficulty, percent, maniaSongScore, maniaRatingPercentV2, performancePoints);
  				#end
  			}
  
-@@ -3862,6 +3978,7 @@ class PlayState extends MusicBeatState
+@@ -3862,6 +4005,7 @@ class PlayState extends MusicBeatState
  				campaignScore += songScore;
  				campaignMisses += songMisses;
  				campaignManiaScore += maniaSongScore;
@@ -308,7 +336,7 @@ index 42ed24d..65c1782 100644
  
  				storyPlaylist.remove(storyPlaylist[0]);
  
-@@ -3877,12 +3994,12 @@ class PlayState extends MusicBeatState
+@@ -3877,12 +4021,12 @@ class PlayState extends MusicBeatState
  					MusicBeatState.switchState(new StoryMenuState());
  
  					// if ()
@@ -339,7 +367,7 @@ index 42ed24d..65c1782 100644
  			bonus = Std.int(Math.max(0, Math.min(100, bonus + daRating.hitBonus - daRating.hitPunishment)));
  
  			var firstMultiplier = 1000000 * (practiceMode ? 0.5 : 1) * maniaNoteMultiplier;
-@@ -4027,6 +4145,8 @@ class PlayState extends MusicBeatState
+@@ -4027,6 +4176,8 @@ class PlayState extends MusicBeatState
  
  			maniaSongScore += baseScore + bonusScore;
  			songScore += score;
@@ -348,15 +376,15 @@ index 42ed24d..65c1782 100644
  			if(!note.ratingDisabled)
  			{
  				songHits++;
-@@ -4332,6 +4452,7 @@ class PlayState extends MusicBeatState
+@@ -4332,6 +4483,7 @@ class PlayState extends MusicBeatState
  				if (daNote.isSustainNote && controlHoldArray[daNote.noteData] && daNote.canBeHit
  				&& daNote.mustPress && !daNote.tooLate && !daNote.wasGoodHit) {
  					goodNoteHit(daNote);
-+					strainKeys[daNote.noteData] += songSpeed * (holdStrainTimer > 0 ? 0.2 : 0.05);
++					strainKeys[daNote.noteData] += Math.log(songSpeed) * Math.exp(Conductor.songPosition / songLength) * (holdStrainTimer > 0 ? 0.2 : 0.05);
  				}
  			});
  
-@@ -4389,6 +4510,8 @@ class PlayState extends MusicBeatState
+@@ -4389,6 +4541,8 @@ class PlayState extends MusicBeatState
  		songMisses++;
  		vocals.volume = 0;
  		if(!practiceMode && ClientPrefs.scoreSystem == 'Vanilla') songScore -= 10;
@@ -365,7 +393,7 @@ index 42ed24d..65c1782 100644
  		bonus = 0;
  
  		totalPlayed++;
-@@ -4438,9 +4561,10 @@ class PlayState extends MusicBeatState
+@@ -4438,9 +4592,10 @@ class PlayState extends MusicBeatState
  				if (!ClientPrefs.ghostTapping) FlxG.sound.play(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
  			}
  			if (ClientPrefs.ghostTapping) {
@@ -379,7 +407,7 @@ index 42ed24d..65c1782 100644
  				return;
  			}
  			health -= 0.05 * healthLoss;
-@@ -4457,6 +4581,8 @@ class PlayState extends MusicBeatState
+@@ -4457,6 +4612,8 @@ class PlayState extends MusicBeatState
  			combo = 0;
  
  			if(!practiceMode && ClientPrefs.scoreSystem == 'Vanilla') songScore -= 10;
@@ -388,33 +416,34 @@ index 42ed24d..65c1782 100644
  			bonus = 0;
  			if(!endingSong) {
  				songMisses++;
-@@ -4599,6 +4725,13 @@ class PlayState extends MusicBeatState
+@@ -4599,6 +4756,13 @@ class PlayState extends MusicBeatState
  				combo += 1;
  				if(combo > 9999) combo = 9999;
  				popUpScore(note);
 +				var sameNote:Bool = lastHitNoteData == note.noteData;
 +				var sameHand:Bool = (note.noteData <= 1 && lastHitNoteData <= 1) || (note.noteData >= 2 && lastHitNoteData >= 2);
 +				var noteDiff:Float = lastHitStrumTime > 0 && note.strumTime - lastHitStrumTime > 50 ? (note.strumTime / 50 - lastHitStrumTime / 50) : 1.25;
-+				strainKeys[note.noteData] += songSpeed * 0.1 * (sameNote ? 1.5 / noteDiff : (sameHand ? 1.25 / noteDiff : 1));
++				strainKeys[note.noteData] += Math.log(songSpeed) * (sameNote ? 1.5 / noteDiff : (sameHand ? 1.25 / noteDiff : 1)) * note.ratingMod * Math.exp(Conductor.songPosition / songLength) * 0.1;
 +				lastHitNoteData = note.noteData;
 +				lastHitStrumTime = note.strumTime;
 +				holdStrainTimer = 0.04;
  			}
  			health += note.hitHealth * healthGain;
  			healthDrained -= note.hitHealth * healthGain;
-@@ -5098,21 +5231,30 @@ class PlayState extends MusicBeatState
+@@ -5098,21 +5262,31 @@ class PlayState extends MusicBeatState
  	public var ratingFC:String;
  	public var maniaRatingPercentV1:Float;
  	public var maniaRatingPercentV2:Float;
-+
 +	private var performancePoints:Float;
-+	private var activeTime:Float = 0;
-+	private var speedBonusMultiplier = 1 / 2.6;
-+	private var songSpeeds:Float = 0;
++	private var aa:Float;
++	private var bb:Float;
++	private var cc:Float;
 +	private var strainKeys:Array<Float>;
-+	private var lastHitNoteData:Int = 0;
-+	private var lastHitStrumTime:Float = -1;
++	private var lastHitNoteData:Int = -1;
++	private var lastHitStrumTime:Float = 0;
 +	private var holdStrainTimer:Float = 0;
++	private var songSpeeds:Float = 0;
++	private var strainTime:Float = 0; // TODO: Put these where they belong
  	public function RecalculateRating(badHit:Bool = false) {
  		setOnLuas('score', songScore);
  		setOnLuas('misses', songMisses);
@@ -436,7 +465,7 @@ index 42ed24d..65c1782 100644
  			else
  			{
  				// Rating Percent
-@@ -5122,7 +5264,7 @@ class PlayState extends MusicBeatState
+@@ -5122,7 +5296,7 @@ class PlayState extends MusicBeatState
  				maniaRatingPercentV1 = Math.min(1, Math.max(0, (300 * (maxs + sicks) + 200 * goods + 100 * bads + 50 * shits) / (300 * totalPlayed)));
  				maniaRatingPercentV2 = Math.min(1, Math.max(0, (305 * maxs + 300 * sicks + 200 * goods + 100 * bads + 50 * shits) / (305 * totalPlayed)));
  				// Rating Name
@@ -445,7 +474,7 @@ index 42ed24d..65c1782 100644
  				{
  					ratingName = ratingStuff[ratingStuff.length-1][0]; //Uses last string
  				}
-@@ -5130,23 +5272,33 @@ class PlayState extends MusicBeatState
+@@ -5130,23 +5304,34 @@ class PlayState extends MusicBeatState
  				{
  					for (i in 0...ratingStuff.length-1)
  					{
@@ -460,7 +489,6 @@ index 42ed24d..65c1782 100644
 -			}
 +			//}
  
-+			var ratingMultiplier:Float = 1.5; // illusion (cuz im stupid and lazy) of an exponential accuracy curve
  			// Rating FC
  			ratingFC = "";
 -			if (sicks > 0) ratingFC = "SFC";
@@ -470,24 +498,26 @@ index 42ed24d..65c1782 100644
 -			else if (songMisses >= 10) ratingFC = "Clear";
 -		}
 +			if (maxs > 0) ratingFC = " (!MFC!)";
-+			var sicks:Int = ratingsData[0].name == 'max' ? sicks : sicks - maxs;
-+			if (sicks > 0) { ratingFC = " (_SFC_)"; ratingMultiplier *= maxs / totalPlayed; }
-+			if (goods > 0) { ratingFC = " (^GFC^)"; ratingMultiplier *= (maxs + sicks * 0.75) / totalPlayed; }
-+			if (bads > 0 || shits > 0) { ratingFC = " ($FC$)"; ratingMultiplier *= (maxs + sicks * 0.75 + goods * 0.5 + bads * 0.25) / totalPlayed; }
-+			if (songMisses > 0) { ratingFC = " (&SDCB&)"; ratingMultiplier *= (maxs + sicks * 0.5 + goods * 0.25) / totalPlayed; }
++			if (sicks > 0) ratingFC = " (_SFC_)";
++			if (goods > 0) ratingFC = " (^GFC^)";
++			if (bads > 0 || shits > 0) ratingFC = " ($FC$)";
++			if (songMisses > 0) ratingFC = " (&SDCB&)";
 +			if (songMisses >= 10) ratingFC = " (#Clear#)";
 +
-+			var songSpeedBonus:Float = (songSpeeds / (Conductor.songPosition / 1000)) * speedBonusMultiplier;
-+			var strain:Float = 0;
++			// Performance points
++			aa = 0;
 +			for (key in strainKeys)
-+				strain += key;
-+			performancePoints = strain * maniaRatingPercentV2 * ratingMultiplier * songSpeedBonus * 5;
++				aa += key;
++			aa *= (songLength / 150000) * 0.25;
++			bb = (strainTime / (Conductor.songPosition / 1000));
++			cc = Math.exp(maniaRatingPercentV2);
++			performancePoints = aa * bb * cc * 3.5;
 +		}
-+		updateScore(badHit); // i aint waiting for #9419 to get merged
++		updateScore(badHit);
  		setOnLuas('rating', ratingPercent);
  		setOnLuas('ratingName', ratingName);
  		setOnLuas('ratingFC', ratingFC);
-@@ -5155,7 +5307,7 @@ class PlayState extends MusicBeatState
+@@ -5155,7 +5340,7 @@ class PlayState extends MusicBeatState
  	#if ACHIEVEMENTS_ALLOWED
  	private function checkForAchievement(achievesToCheck:Array<String> = null):String
  	{

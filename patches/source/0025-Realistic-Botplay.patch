@@ -8,10 +8,10 @@ Subject: [PATCH] Make botplay act like a real player
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/source/PlayState.hx b/source/PlayState.hx
-index 6794a89..9e779fc 100644
+index d98b834..40fa631 100644
 --- a/source/PlayState.hx
 +++ b/source/PlayState.hx
-@@ -2339,7 +2339,7 @@ class PlayState extends MusicBeatState
+@@ -2364,7 +2364,7 @@ class PlayState extends MusicBeatState
  				new FlxTextFormatMarkerPair(blackFormat, '=')
  			]);
  
@@ -20,16 +20,16 @@ index 6794a89..9e779fc 100644
  		{
  			if(scoreTxtTween != null) {
  				scoreTxtTween.cancel();
-@@ -3334,7 +3334,7 @@ class PlayState extends MusicBeatState
+@@ -3361,7 +3361,7 @@ class PlayState extends MusicBeatState
  							goodNoteHit(daNote);
- 							if (!daNote.wasGoodHit) strainKeys[daNote.noteData] += songSpeed * (holdStrainTimer > 0 ? 0.2 : 0.05);
+ 							if (!daNote.wasGoodHit) strainKeys[daNote.noteData] += Math.log(songSpeed) * Math.exp(Conductor.songPosition / songLength) * (holdStrainTimer > 0 ? 0.2 : 0.05);
  						}
 -					} else if(daNote.strumTime <= Conductor.songPosition || (daNote.isSustainNote && daNote.canBeHit && daNote.mustPress)) {
 +					} else if(!daNote.ignoreNote && !daNote.hitCausesMiss && (daNote.strumTime <= Conductor.songPosition || (daNote.isSustainNote && daNote.canBeHit && daNote.mustPress))) {
  						goodNoteHit(daNote);
  					}
  				}
-@@ -3370,7 +3370,7 @@ class PlayState extends MusicBeatState
+@@ -3397,7 +3397,7 @@ class PlayState extends MusicBeatState
  				// Kill extremely late notes and cause misses
  				if (Conductor.songPosition > noteKillOffset + daNote.strumTime)
  				{

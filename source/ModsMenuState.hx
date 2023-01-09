@@ -329,9 +329,10 @@ class ModsMenuState extends MusicBeatState
 			var newMod:ModMetadata = new ModMetadata(values[0]);
 			mods.push(newMod);
 
-			newMod.alphabet = new Alphabet(0, 0, mods[i].name, true, false, 0.05);
+			newMod.alphabet = new Alphabet(0, 0, mods[i].name, true);
 			var scale:Float = Math.min(840 / newMod.alphabet.width, 1);
-			newMod.alphabet = new Alphabet(0, 0, mods[i].name, true, false, 0.05, scale);
+			newMod.alphabet.scaleX = scale;
+			newMod.alphabet.scaleY = scale;
 			newMod.alphabet.y = i * 150;
 			newMod.alphabet.x = 310;
 			add(newMod.alphabet);
@@ -471,7 +472,7 @@ class ModsMenuState extends MusicBeatState
 			noModsTxt.alpha = 1 - Math.sin((Math.PI * noModsSine) / 180);
 		}
 
-		if(canExit && controls.BACK)
+		if(canExit && (controls.BACK || FlxG.mouse.justPressedRight))
 		{
 			if(colorTween != null) {
 				colorTween.cancel();
@@ -481,14 +482,15 @@ class ModsMenuState extends MusicBeatState
 			saveTxt();
 			if(needaReset)
 			{
-				//MusicBeatState.switchState(new TitleState());
-				TitleState.initialized = false;
-				TitleState.closedState = false;
+				//MusicBeatState.switchState(new MainMenuState());
+				MainMenuState.initialized = false;
+				MainMenuState.activatedLogo = false;
+				MainMenuState.sawCoolText = false;
 				FlxG.sound.music.fadeOut(0.3);
-				if(FreeplayState.vocals != null)
+				if(FreeplaySubstate.vocals != null)
 				{
-					FreeplayState.vocals.fadeOut(0.3);
-					FreeplayState.vocals = null;
+					FreeplaySubstate.vocals.fadeOut(0.3);
+					FreeplaySubstate.vocals = null;
 				}
 				FlxG.camera.fade(FlxColor.BLACK, 0.5, false, FlxG.resetGame, false);
 			}
@@ -507,6 +509,11 @@ class ModsMenuState extends MusicBeatState
 		{
 			changeSelection(1);
 			FlxG.sound.play(Paths.sound('scrollMenu'));
+		}
+		if(FlxG.mouse.wheel != 0)
+		{
+			changeSelection(-FlxG.mouse.wheel);
+			FlxG.sound.play(Paths.sound('scrollMenu'), 0.2);
 		}
 		updatePosition(elapsed);
 		super.update(elapsed);
@@ -744,6 +751,14 @@ class ModMetadata
 				if(description != null && description.length > 0)
 				{
 					this.description = description;
+				}
+				if(name == 'Name')
+				{
+					this.name = folder;
+				}
+				if(description == 'Description')
+				{
+					this.description = "No description provided.";
 				}
 				if(colors != null && colors.length > 2)
 				{

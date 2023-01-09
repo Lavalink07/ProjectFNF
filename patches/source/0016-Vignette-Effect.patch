@@ -40,7 +40,7 @@ index 84fd327..26cd5ee 100644
  		// flixel automatically saves your volume!
  		if(FlxG.save.data.volume != null)
 diff --git a/source/PlayState.hx b/source/PlayState.hx
-index 3b216c7..af708a4 100644
+index 973436f..9419825 100644
 --- a/source/PlayState.hx
 +++ b/source/PlayState.hx
 @@ -334,6 +334,7 @@ class PlayState extends MusicBeatState
@@ -60,9 +60,9 @@ index 3b216c7..af708a4 100644
  		#if desktop
  		// Updating Discord Rich Presence.
  		DiscordClient.changePresence(detailsText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
-@@ -3073,6 +3076,13 @@ class PlayState extends MusicBeatState
+@@ -3093,6 +3096,13 @@ class PlayState extends MusicBeatState
+ 		if (strainTime > 0)
  			holdStrainTimer = Math.max(0, holdStrainTimer - elapsed);
- 		}
  
 +		if (vignette == null) {
 +			vignette = new FlxSprite().loadGraphic(Paths.image('vignette'));
