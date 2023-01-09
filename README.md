@@ -1,7 +1,7 @@
 # Friday Night Funkin' - ProjectFNF Forked-Lavalink07
 # =====EDITS=====
-# Winning Icons
-# Updated Ratings
+* Winning Icons
+* Updated Ratings
 # =====ProjectFNF=====
 # Features
 * [All Psych Engine features](https://github.com/ShadowMario/FNF-PsychEngine/tree/0.6.3#features)
